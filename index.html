@@ -1184,8 +1184,15 @@ function renderAuthScreen(msg,mode){
   const g=document.getElementById("au-go");
   const gg=document.getElementById("au-google");
   if(gg)gg.onclick=async()=>{
-    try{ await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    catch(e){ err(e.code==="auth/popup-closed-by-user"?"":"No se pudo abrir Google: "+e.message); }
+    const p=new firebase.auth.GoogleAuthProvider();
+    try{
+      await auth.signInWithPopup(p);
+    }catch(e){
+      const soft=["auth/popup-blocked","auth/cancelled-popup-request","auth/popup-closed-by-user","auth/operation-not-supported-in-this-environment","auth/web-storage-unsupported","auth/unauthorized-domain"].includes(e.code);
+      if(!soft){ err("No se pudo abrir Google: "+e.message); return; }
+      try{ await auth.signInWithRedirect(p); }
+      catch(e2){ err("No se pudo abrir Google: "+e2.message); }
+    }
   };
   if(mode==="completar"){
     document.getElementById("au-out").onclick=()=>logout();
