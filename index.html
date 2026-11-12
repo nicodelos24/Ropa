@@ -1176,7 +1176,7 @@ function renderAuthScreen(msg,mode){
       <button class="aghost" id="au-sw1">‹ Volver</button>`;
   a.innerHTML=`
     <div class="alogo">Ropa<span>.</span></div>
-    <div style="text-align:center;font-size:10px;color:var(--mut);margin-top:2px">v3</div>
+    <div style="text-align:center;font-size:10px;color:var(--mut);margin-top:2px">v4</div>
     <div class="asub">${mode==="signup"?"Activá tu negocio con el código que te dieron":mode==="reset"?"Recuperar contraseña":mode==="completar"?"Casi listo":"Ingresá para ver tus ventas"}</div>
     <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||FB.gerr||"")}</div></div>`;
   FB.gerr=null;
