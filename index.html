@@ -61,6 +61,10 @@ button{cursor:pointer;border:none;background:none}
   border:1.5px solid var(--line);font-size:13px;font-weight:600;
   background:transparent;color:var(--mut);
 }
+.chip.c-green{background:color-mix(in srgb,var(--c-green) 14%,transparent);color:var(--c-green);border-color:color-mix(in srgb,var(--c-green) 40%,transparent)}
+.chip.c-orange{background:color-mix(in srgb,var(--c-orange) 14%,transparent);color:var(--c-orange);border-color:color-mix(in srgb,var(--c-orange) 40%,transparent)}
+.chip.c-blue{background:color-mix(in srgb,var(--c-blue) 14%,transparent);color:var(--c-blue);border-color:color-mix(in srgb,var(--c-blue) 40%,transparent)}
+.chip.c-neutral{color:var(--mut)}
 .chip.on.c-green{background:var(--c-green);border-color:var(--c-green);color:#fff}
 .chip.on.c-orange{background:var(--c-orange);border-color:var(--c-orange);color:#fff}
 .chip.on.c-blue{background:var(--c-blue);border-color:var(--c-blue);color:#fff}
@@ -158,7 +162,7 @@ nav button.on{color:var(--acc2)}
 .inv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .inv-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .inv-photo{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--card2)}
-.inv-ph{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--line)}
+.inv-ph{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--txt)}
 .inv-body{padding:10px 12px}
 .inv-body h4{font-size:14px;line-height:1.3}
 .inv-body p{font-size:14px;font-weight:700;color:var(--acc2);margin-top:2px}
@@ -178,8 +182,9 @@ nav button.on{color:var(--acc2)}
 .cal-head button{width:34px;height:34px;border-radius:10px;background:var(--card2);color:var(--mut);font-size:16px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
 .cal-grid .dow{font-size:10px;color:var(--mut);padding:4px 0}
-.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:10px;position:relative}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:10px;position:relative;cursor:pointer}
 .cal-day.today{background:var(--card2);font-weight:700}
+.cal-day.sel{outline:2px solid var(--acc);background:var(--card2);font-weight:700}
 .cal-day.has{font-weight:700}
 .cal-day.has::after{content:"";position:absolute;bottom:3px;width:5px;height:5px;border-radius:50%;background:var(--acc)}
 .ev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
@@ -193,7 +198,8 @@ nav button.on{color:var(--acc2)}
 .invpick button.on{border-color:var(--acc)}
 .invpick h5{font-size:12px;line-height:1.3}
 .invpick p{font-size:11px;color:var(--acc2);margin-top:2px}
-.invpick .thumb{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;margin-bottom:5px;background:var(--line)}
+.invpick .thumb{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;margin-bottom:5px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:22px}
+.invpick button h5{display:flex;gap:4px;align-items:flex-start}
 </style>
 </head>
 <body>
@@ -241,11 +247,13 @@ const ST = {
   new:{l:"Nuevo", c:"new"},
 };
 const SELLERS=["Yo","Mamá"];
+const CATS=[["vestido","👗","Vestido"],["top","👚","Top / Remera"],["pantalon","👖","Pantalón / Leggin"],["short","🩳","Short / Bermuda"],["interior","🩲","Ropa interior"],["camisa","👔","Camisa / Blusa"],["abrigo","🧥","Abrigo / Chaqueta"],["media","🧦","Medias"],["otro","👜","Accesorio / Otro"]];
+const CAT_ICON=Object.fromEntries(CATS.map(c=>[c[0],c[1]]));
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const DOW=["D","L","M","M","J","V","S"];
 const KEY="ropa_data_v2";
 let db = load();
-let view="orders", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear();
+let view="orders", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null;
 
 function load(){
   try{
@@ -265,6 +273,28 @@ function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">
 function uid(p){ return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function dstr(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function fdate(s){ if(!s)return""; const [y,m,d]=s.split("-"); return d+" de "+MESES[+m-1]+(+y!==new Date().getFullYear()?" de "+y:""); }
+
+/* ---------- teléfono ---------- */
+function prefijo(){ return db.prefijo||"+598"; }
+function waTel(t){
+  if(!t)return"";
+  const raw=(t||"").replace(/\D/g,"");
+  const p=prefijo().replace(/\D/g,"");
+  if((t||"").trim().startsWith("+")&&!raw.startsWith(p)&&raw.length>=8)return raw;
+  let d=raw;
+  if(p&&d.startsWith(p))d=d.slice(p.length);
+  d=d.replace(/^0+/,"");
+  if(d.length<6)return raw;
+  return p+d;
+}
+function maskTel(v){ return (v||"").replace(/\D/g,"").replace(/(\d{3})(?=\d)/g,"$1 ").trim(); }
+function fmtTel(t){
+  let d=(t||"").replace(/\D/g,"");
+  const p=prefijo().replace(/\D/g,"");
+  if(p&&d.startsWith(p))d=d.slice(p.length);
+  if(d&&d.length>=8&&!d.startsWith("0"))d="0"+d;
+  return d.replace(/(\d{3})(?=\d)/g,"$1 ").trim();
+}
 
 /* ---------- theme ---------- */
 function applyTheme(){
@@ -359,8 +389,8 @@ function renderInventory(main){
   if(!list.length){ main.innerHTML=`<div class="empty"><b>Inventario vacío</b>Agrega tus productos con nombre, precio y foto.<br>Luego podrás elegirlos al crear un pedido.</div>`; return; }
   main.innerHTML=`<div class="inv">`+list.map(i=>`
     <div class="inv-card">
-      ${i.photo?`<img class="inv-photo" src="${i.photo}">`:`<div class="inv-ph">👗</div>`}
-      <div class="inv-body"><h4>${esc(i.name)}</h4><p>${fmt(i.price)}</p></div>
+      ${i.photo?`<img class="inv-photo" src="${i.photo}">`:`<div class="inv-ph">${CAT_ICON[i.cat]||"👗"}</div>`}
+      <div class="inv-body"><h4>${esc(i.name)}</h4><p>${fmt(i.price)}${i.cat?` · ${esc((CATS.find(c=>c[0]===i.cat)||["","",""])[2]||"")}`:""}</p></div>
       <div class="inv-actions">
         <button data-act="edit" data-id="${i.id}">Editar</button>
         <button data-act="del" data-id="${i.id}">Eliminar</button>
@@ -375,15 +405,23 @@ function renderInventory(main){
   });
 }
 function openInvEditor(it){
-  const isNew=!it; it=it||{id:uid("i"),name:"",price:"",photo:null};
+  const isNew=!it; it=it||{id:uid("i"),name:"",price:"",photo:null,cat:"vestido"};
+  let cat=it.cat||"vestido";
   openSheet(`<div class="grab"></div><h2>${isNew?"Nuevo producto":"Editar producto"}</h2>
     ${it.photo?`<img class="inv-photo" src="${it.photo}" style="border-radius:14px;margin-top:12px">`:""}
     <input type="file" id="inv-photo" accept="image/*" style="display:none">
     <button class="ghost" id="photoBtn" style="margin-top:12px">${it.photo?"📷 Cambiar foto":"📷 Tomar foto / elegir imagen"}</button>
+    <label>Tipo de prenda (ícono)</label><div class="seg" id="seg-cat">
+      ${CATS.map(c=>`<button data-k="${c[0]}" class="${cat===c[0]?"on":""}">${c[1]} ${c[2]}</button>`).join("")}
+    </div>
     <label>Nombre</label><input id="inv-name" value="${esc(it.name)}" placeholder="Ej. Camisola Angélica Preto">
     <label>Precio</label><input id="inv-price" inputmode="numeric" value="${it.price??""}" placeholder="$">
     <button class="big" id="inv-save">${isNew?"Agregar al inventario":"Guardar cambios"}</button>
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+  document.querySelectorAll("#seg-cat button").forEach(b=>b.onclick=()=>{
+    cat=b.dataset.k;
+    document.querySelectorAll("#seg-cat button").forEach(x=>x.classList.toggle("on",x===b));
+  });
   document.getElementById("photoBtn").onclick=()=>document.getElementById("inv-photo").click();
   document.getElementById("inv-photo").onchange=e=>{
     const f=e.target.files[0]; if(!f)return;
@@ -394,6 +432,7 @@ function openInvEditor(it){
     if(!name){ toast("Escribe el nombre del producto"); return; }
     it.name=name;
     it.price=Number(document.getElementById("inv-price").value.replace(/\D/g,""))||0;
+    it.cat=cat;
     if(isNew)db.inventory.push(it);
     save(); closeSheet(); toast("Inventario actualizado ✓");
   };
@@ -420,7 +459,7 @@ function renderClients(main){
     const pend=ords.filter(o=>o.estado!=="paid").length;
     return `<div class="cli" data-id="${c.id}">
       <div class="row1"><div class="cli-id"><div class="avatar">${esc((c.name||"?")[0].toUpperCase())}</div>
-      <div style="min-width:0"><h3>${esc(c.name)}</h3><p>${ords.length} pedido${ords.length!==1?"s":""}${pend?` · ${pend} pendiente${pend!==1?"s":""}`:" · al día"}${c.tel?`<br>📞 ${esc(c.tel)}`:""}</p></div></div></div>
+      <div style="min-width:0"><h3>${esc(c.name)}</h3><p>${ords.length} pedido${ords.length!==1?"s":""}${pend?` · ${pend} pendiente${pend!==1?"s":""}`:" · al día"}${c.tel?`<br>📞 ${esc(fmtTel(c.tel))}`:""}</p></div></div></div>
     </div>`;
   }).join("");
   main.querySelectorAll(".cli").forEach(el=>el.onclick=()=>openClient(el.dataset.id));
@@ -431,7 +470,7 @@ function openClient(id){
   openSheet(`<div class="grab"></div>
     <div style="display:flex;gap:12px;align-items:center;margin:10px 0 4px">
       <div class="avatar" style="width:52px;height:52px;font-size:20px">${esc((c.name||"?")[0].toUpperCase())}</div>
-      <div><h2>${esc(c.name)}</h2><p style="font-size:13px;color:var(--mut)">${c.tel?esc(c.tel):"Sin teléfono"}</p></div>
+      <div><h2>${esc(c.name)}</h2><p style="font-size:13px;color:var(--mut)">${c.tel?esc(fmtTel(c.tel)):"Sin teléfono"}</p></div>
     </div>
     <button class="ghost" id="cli-edit" style="margin-top:12px">✏️ Editar datos del cliente</button>
     ${c.tel?`<button class="big wa" id="cli-wa" style="margin-top:10px">💬 Escribir por WhatsApp</button>`:""}
@@ -447,11 +486,12 @@ function openClient(id){
   document.getElementById("cli-edit").onclick=()=>{
     openSheet(`<div class="grab"></div><h2>Editar cliente</h2>
       <label>Nombre</label><input id="ce-name" value="${esc(c.name)}">
-      <label>WhatsApp</label><input id="ce-tel" inputmode="tel" value="${esc(c.tel||"")}">
+      <label>WhatsApp</label><input id="ce-tel" inputmode="tel" value="${esc(c.tel||"")}" placeholder="${esc(fmtTel("099123123"))}">
       <label>Notas</label><textarea id="ce-notas" rows="2">${esc(c.notas||"")}</textarea>
       <button class="big" id="ce-save">Guardar</button>
       <button class="ghost danger" id="ce-del">Eliminar cliente</button>
       <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+    document.getElementById("ce-tel").oninput=e=>{ e.target.value=maskTel(e.target.value); };
     document.getElementById("ce-save").onclick=()=>{
       c.name=document.getElementById("ce-name").value.trim()||c.name;
       c.tel=document.getElementById("ce-tel").value.trim();
@@ -465,7 +505,7 @@ function openClient(id){
     };
   };
   if(document.getElementById("cli-wa"))document.getElementById("cli-wa").onclick=()=>{
-    window.open(`https://wa.me/${(c.tel||"").replace(/\D/g,"")}`,"_blank");
+    window.open(`https://wa.me/${waTel(c.tel)}`,"_blank");
   };
   document.getElementById("cli-new-order").onclick=()=>openEditor(null,c);
   document.querySelectorAll(".sheet-in .o").forEach(el=>el.onclick=()=>openOrder(el.dataset.id));
@@ -485,30 +525,41 @@ function renderAgenda(main){
   for(let d=1;d<=days;d++){
     const ds=dstr(new Date(calYear,calMonth,d));
     const has=(ordersByDate[ds]||evByDate[ds])?"has":"";
-    cells+=`<div class="cal-day ${ds===today?"today":""} ${has}">${d}</div>`;
+    cells+=`<div class="cal-day ${ds===today?"today":""} ${ds===selDate?"sel":""} ${has}" data-ds="${ds}">${d}</div>`;
   }
   const allDates=[...new Set([...Object.keys(ordersByDate),...Object.keys(evByDate)].filter(Boolean))].sort();
   const nowDs=dstr(new Date());
   const past=allDates.filter(d=>d<nowDs).reverse();
   const future=allDates.filter(d=>d>=nowDs);
-  const evRow=(ds,extra)=>`
-    ${(evByDate[ds]||[]).map(e=>`<div class="ev" data-ev="${e.id}"><div class="dot" style="background:var(--acc)"></div>
-      <div style="flex:1;min-width:0"><h4>${esc(e.title)}</h4><p>${esc(e.cliente||"")}</p></div>
-      <div class="ev-date">${fdate(ds)}</div></div>`).join("")}
-    ${(ordersByDate[ds]||[]).map(o=>{
+  const evRow=(ds,extra)=>{
+    const dayEvents=(evByDate[ds]||[]).map(e=>{
+      const ord=e.orderId?db.orders.find(x=>x.id===e.orderId):null;
+      return `<div class="ev" data-ev="${e.id}"><div class="dot" style="background:var(--acc)"></div>
+      <div style="flex:1;min-width:0"><h4>${esc(e.title)}</h4><p>${esc(e.cliente||"")}${ord?` · 🛍️ ${esc(ord.cliente)} ${fmt(total(ord))}`:""}</p></div>
+      <div class="ev-date">${fdate(ds)}</div></div>`;
+    }).join("");
+    const dayOrders=(ordersByDate[ds]||[]).map(o=>{
       const st=ST[o.estado]||ST.new;
       return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
         <div class="row1"><h3>${esc(o.cliente)}</h3><span class="total">${fmt(total(o))}</span></div>
         <div class="items">${esc((o.items||[]).map(i=>i.name).join(" · "))}</div>
         <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
-    }).join("")}`;
+    }).join("");
+    return dayEvents+dayOrders;
+  };
   main.innerHTML=`
     <div class="cal">
       <div class="cal-head">
         <button id="cal-prev">‹</button><b id="cal-title">${MESES[calMonth]} ${calYear}</b><button id="cal-next">›</button>
       </div>
       <div class="cal-grid">${DOW.map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div>
+      <p style="font-size:11px;color:var(--mut);text-align:center;margin-top:8px">Toca un día para ver qué hay o agendar algo</p>
     </div>
+    ${selDate?`
+      <div class="sect-title">📅 ${fdate(selDate)}</div>
+      ${evRow(selDate)||`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado este día.</p>`}
+      <button class="addp" id="add-ev-day" style="margin:10px 0 8px">+ Agendar algo este día</button>
+      <button class="addp" id="add-order-day" style="margin-bottom:8px">+ Nuevo pedido con entrega este día</button>`:""}
     <div class="sect-title">Próximos</div>
     ${future.length?future.map(ds=>evRow(ds)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
     ${(db.events.filter(e=>!e.date).length)?`<div class="sect-title">Sin fecha</div>${db.events.filter(e=>!e.date).map(e=>`
@@ -517,14 +568,23 @@ function renderAgenda(main){
     ${past.length?`<div class="sect-title">Pasados</div>${past.map(ds=>evRow(ds)).join("")}`:""}`;
   document.getElementById("cal-prev").onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} render(); };
   document.getElementById("cal-next").onclick=()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} render(); };
+  main.querySelectorAll(".cal-day[data-ds]").forEach(el=>el.onclick=()=>{
+    selDate=(selDate===el.dataset.ds)?null:el.dataset.ds; render();
+  });
+  if(document.getElementById("add-ev-day"))document.getElementById("add-ev-day").onclick=()=>openEventEditor(null,selDate);
+  if(document.getElementById("add-order-day"))document.getElementById("add-order-day").onclick=()=>openEditor(null,null,selDate);
   main.querySelectorAll(".ev").forEach(el=>el.onclick=()=>openEvent(el.dataset.ev));
   main.querySelectorAll(".o").forEach(el=>el.onclick=()=>openOrder(el.dataset.id));
 }
-function openEventEditor(e){
-  const isNew=!e; e=e||{title:"",date:"",cliente:""};
+function openEventEditor(e, presetDate){
+  const isNew=!e; e=e||{title:"",date:presetDate||"",cliente:"",orderId:null};
   openSheet(`<div class="grab"></div><h2>${isNew?"Nuevo evento":"Editar evento"}</h2>
     <label>¿Qué es?</label><input id="ev-title" value="${esc(e.title)}" placeholder="Ej. Entregar pedido a Helen">
     <label>Fecha</label><input id="ev-date" type="date" value="${e.date||""}">
+    <label>Pedido vinculado (opcional)</label><select id="ev-order">
+      <option value="">— Ninguno —</option>
+      ${db.orders.map(o=>`<option value="${o.id}" ${e.orderId===o.id?"selected":""}>${esc(o.cliente)} · ${esc((o.items||[{}])[0].name||"Pedido")} · ${fmt(total(o))}</option>`).join("")}
+    </select>
     <button class="big" id="ev-save">${isNew?"Agendar":"Guardar cambios"}</button>
     ${isNew?"":`<button class="ghost danger" id="ev-del">Eliminar evento</button>`}
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
@@ -532,6 +592,10 @@ function openEventEditor(e){
     const title=document.getElementById("ev-title").value.trim();
     if(!title){ toast("Escribe qué es"); return; }
     e.title=title; e.date=document.getElementById("ev-date").value;
+    const oid=document.getElementById("ev-order").value||null;
+    e.orderId=oid;
+    const ord=oid?db.orders.find(x=>x.id===oid):null;
+    e.cliente=ord?ord.cliente:e.cliente;
     if(isNew)db.events.push(e);
     save(); closeSheet(); toast("Agendado ✓");
   };
@@ -542,15 +606,20 @@ function openEventEditor(e){
 }
 function openEvent(id){
   const e=db.events.find(x=>x.id===id); if(!e)return;
+  const ord=e.orderId?db.orders.find(x=>x.id===e.orderId):null;
   openSheet(`<div class="grab"></div><h2>${esc(e.title)}</h2>
     <p style="font-size:14px;color:var(--mut);margin-top:6px">📅 ${fdate(e.date)||"Sin fecha"}${e.cliente?` · ${esc(e.cliente)}`:""}</p>
+    ${ord?`<div class="o" data-id="${ord.id}" style="margin-top:12px;cursor:pointer">
+      <div class="row1"><h3 style="font-size:14px">${esc(ord.cliente)}</h3><span class="total" style="font-size:14px">${fmt(total(ord))}</span></div>
+      <div class="badges"><span class="b ${(ST[ord.estado]||ST.new).c}">${(ST[ord.estado]||ST.new).l}</span></div></div>`:""}
     <button class="big" id="ev-edit">Editar</button>
     <button class="ghost" onclick="closeSheet()">Cerrar</button>`);
   document.getElementById("ev-edit").onclick=()=>openEventEditor(e);
+  if(ord)document.querySelector(".sheet-in .o").onclick=()=>openOrder(ord.id);
 }
 
 /* ---------- Editor de pedido ---------- */
-function openEditor(orig, presetClient){
+function openEditor(orig, presetClient, presetDate){
   const isNew=!orig;
   orig=orig||null;
   const c0=presetClient||null;
@@ -559,15 +628,16 @@ function openEditor(orig, presetClient){
     if(!items.length)return`<p style="font-size:13px;color:var(--mut)">Tu inventario está vacío. Agrega productos en la pestaña Inventario.</p>`;
     return `<div class="invpick">`+items.map(i=>`
       <button data-iid="${i.id}" class="${sel.includes(i.id)?"on":""}">
-        ${i.photo?`<img class="thumb" src="${i.photo}">`:""}
+        ${i.photo?`<img class="thumb" src="${i.photo}">`:`<div class="thumb">${CAT_ICON[i.cat]||"👗"}</div>`}
         <h5>${esc(i.name)}</h5><p>${fmt(i.price)}</p></button>`).join("")+`</div>`;
   };
   const base=orig||{cliente:c0?c0.name:"",tel:c0?c0.tel:"",clienteId:c0?c0.id:null,estado:"new",vendedor:"Yo",
-    items:[{name:"",price:"",qty:1}],cuotas:2,cuotasPagadas:0,notas:"",fecha:""};
+    items:[{name:"",price:"",qty:1}],cuotas:2,cuotasPagadas:0,notas:"",fecha:presetDate||""};
   openSheet(`<div class="grab"></div><h2>${isNew?(c0?`Nuevo pedido · ${esc(c0.name)}`:"Nuevo pedido"):"Editar pedido"}</h2>
-    <label>Cliente</label><input id="f-cliente" value="${esc(base.cliente)}" placeholder="Nombre del cliente">
+    <label>Cliente</label><input id="f-cliente" value="${esc(base.cliente)}" placeholder="Nombre del cliente" list="clients-dl" autocomplete="off">
+    <datalist id="clients-dl">${db.clients.map(c=>`<option value="${esc(c.name)}">`).join("")}</datalist>
     <div id="client-hint"></div>
-    <label>WhatsApp (opcional)</label><input id="f-tel" value="${esc(base.tel||"")}" inputmode="tel" placeholder="Ej. 55 1234 5678">
+    <label>WhatsApp (opcional) · prefijo ${esc(prefijo())} se agrega solo</label><input id="f-tel" value="${esc(base.tel||"")}" inputmode="tel" placeholder="${esc(fmtTel("099123123"))}">
     <label>Productos</label>
     <div class="seg" id="mode-seg" style="margin-bottom:10px">
       <button data-m="inv" class="on">Del inventario</button>
@@ -641,10 +711,20 @@ function openEditor(orig, presetClient){
     vendedor=b.dataset.k;
     document.querySelectorAll("#seg-vend button").forEach(x=>x.classList.toggle("on",x===b));
   });
+  document.getElementById("f-tel").oninput=e=>{
+    const pos=e.target.selectionStart;
+    e.target.value=maskTel(e.target.value);
+  };
   document.getElementById("f-cliente").oninput=e=>{
     const v=e.target.value.trim();
     const c=db.clients.find(x=>(x.name||"").toLowerCase()===v.toLowerCase());
-    document.getElementById("client-hint").innerHTML=c?`<p style="font-size:12px;color:var(--c-green);margin-top:4px">✓ Cliente conocido${c.tel?" · "+esc(c.tel):""}</p>`:"";
+    if(c){
+      document.getElementById("client-hint").innerHTML=`<p style="font-size:12px;color:var(--c-green);margin-top:4px">✓ Cliente conocido${c.tel?" · 📞 "+esc(fmtTel(c.tel)):""}</p>`;
+      const telEl=document.getElementById("f-tel");
+      if(c.tel&&!telEl.value.trim())telEl.value=maskTel(c.tel);
+    }else{
+      document.getElementById("client-hint").innerHTML=`<p style="font-size:12px;color:var(--mut);margin-top:4px">Nuevo cliente · se guardará automáticamente</p>`;
+    }
   };
   document.getElementById("saveBtn").onclick=()=>{
     const cliente=document.getElementById("f-cliente").value.trim();
@@ -673,7 +753,8 @@ function openEditor(orig, presetClient){
     };
     if(orig)Object.assign(orig,data);
     else db.orders.push(data);
-    upsertClient(orig||data);
+    const cl=upsertClient(orig||data);
+    if(data.tel)cl.tel=data.tel;
     save(); closeSheet(); toast("Guardado ✓");
   };
 }
@@ -706,7 +787,7 @@ function openOrder(id){
   const waBtn=document.getElementById("waBtn");
   if(waBtn)waBtn.onclick=()=>{
     const msg=`Hola ${o.cliente}! Te escribo por tu pedido: ${(o.items||[]).map(i=>i.name).join(", ")}. Total ${fmt(total(o))}.`;
-    window.open(`https://wa.me/${(o.tel||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`,"_blank");
+    window.open(`https://wa.me/${waTel(o.tel)}?text=${encodeURIComponent(msg)}`,"_blank");
   };
   const bump=d=>{
     o.cuotasPagadas=Math.max(0,(Number(o.cuotasPagadas)||0)+d);
@@ -724,6 +805,11 @@ function renderSettings(){
   <div class="sett-card"><h3>🌗 Apariencia</h3>
     <p>Cambia entre modo oscuro y claro (también con el botón de arriba).</p>
     <button class="ghost" id="themeBtn2" style="margin-top:12px">Cambiar a modo ${((db.theme||"dark")==="dark")?"claro ☀️":"oscuro 🌙"}</button>
+  </div>
+  <div class="sett-card"><h3>🌍 Prefijo de país</h3>
+    <p>Se agrega automáticamente a los números de WhatsApp que no lo traigan. Ej: ${esc(prefijo())} (Uruguay).</p>
+    <input id="prefijo-in" value="${esc(prefijo())}" style="margin-top:10px" placeholder="+598">
+    <button class="ghost" id="prefijo-save" style="margin-top:8px">Guardar prefijo</button>
   </div>
   <div class="sett-card"><h3>📥 Respaldo</h3>
     <p>Guarda una copia de pedidos, inventario, clientes y agenda en un archivo.</p>
@@ -743,6 +829,12 @@ function renderSettings(){
 }
 function wireSettings(){
   document.getElementById("backBtn").onclick=()=>{ view="orders"; render(); };
+  document.getElementById("prefijo-save").onclick=()=>{
+    let v=document.getElementById("prefijo-in").value.trim();
+    if(v&&!v.startsWith("+"))v="+"+v.replace(/\D/g,"");
+    if(v&&!v.replace(/\D/g,""))v="+598";
+    db.prefijo=v||"+598"; save(); toast("Prefijo guardado ✓"); view="settings"; render();
+  };
   const t2=document.getElementById("themeBtn2");
   if(t2)t2.onclick=()=>{ db.theme=(db.theme||"dark")==="dark"?"light":"dark"; save(); applyTheme(); view="settings"; render(); };
   document.getElementById("expBtn").onclick=()=>{
@@ -767,7 +859,7 @@ function wireSettings(){
   document.getElementById("resetBtn").onclick=()=>{
     if(!confirm("¿Seguro que quieres borrar TODO?"))return;
     if(!confirm("Última confirmación: no se puede deshacer."))return;
-    db={orders:[],inventory:[],clients:[],events:[],theme:db.theme}; save(); toast("Todo borrado"); view="orders"; render();
+    db={orders:[],inventory:[],clients:[],events:[],theme:db.theme,prefijo:db.prefijo}; save(); toast("Todo borrado"); view="orders"; render();
   };
 }
 
@@ -781,10 +873,11 @@ document.getElementById("fab").onclick=()=>{
 function openNewClient(){
   openSheet(`<div class="grab"></div><h2>Nuevo cliente</h2>
     <label>Nombre</label><input id="nc-name" placeholder="Nombre del cliente">
-    <label>WhatsApp</label><input id="nc-tel" inputmode="tel" placeholder="Ej. 55 1234 5678">
+    <label>WhatsApp · prefijo ${esc(prefijo())} se agrega solo</label><input id="nc-tel" inputmode="tel" placeholder="${esc(fmtTel("099123123"))}">
     <label>Notas</label><textarea id="nc-notas" rows="2"></textarea>
     <button class="big" id="nc-save">Guardar cliente</button>
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+  document.getElementById("nc-tel").oninput=e=>{ e.target.value=maskTel(e.target.value); };
   document.getElementById("nc-save").onclick=()=>{
     const name=document.getElementById("nc-name").value.trim();
     if(!name){ toast("Escribe el nombre"); return; }
