@@ -61,9 +61,9 @@ button{cursor:pointer;border:none;background:none}
   border:1.5px solid var(--line);font-size:13px;font-weight:600;
   background:transparent;color:var(--mut);
 }
-.chip.c-green{background:transparent;color:var(--c-green);border-color:var(--line)}
-.chip.c-orange{background:transparent;color:var(--c-orange);border-color:var(--line)}
-.chip.c-blue{background:transparent;color:var(--c-blue);border-color:var(--line)}
+.chip.c-green{background:transparent;color:color-mix(in srgb,var(--c-green) 55%,var(--mut));border-color:var(--line)}
+.chip.c-orange{background:transparent;color:color-mix(in srgb,var(--c-orange) 55%,var(--mut));border-color:var(--line)}
+.chip.c-blue{background:transparent;color:color-mix(in srgb,var(--c-blue) 55%,var(--mut));border-color:var(--line)}
 .chip.c-neutral{color:var(--mut)}
 .chip.on.c-green{background:var(--c-green);border-color:var(--c-green);color:#fff}
 .chip.on.c-orange{background:var(--c-orange);border-color:var(--c-orange);color:#fff}
@@ -87,6 +87,13 @@ main{padding:14px 14px 0}
 .b.mama{background:var(--c-yellow);color:#7a5c00}
 html[data-theme="light"] .b.new{background:#e8e8f0;color:#55556a}
 .o.act{border-color:var(--acc)}
+.ostack{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ostack .stack{display:flex}
+.ostack .st{width:38px;height:38px;border-radius:13px;border:2px solid var(--card);margin-left:-12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0}
+.ostack .st:first-child{margin-left:0}
+.ostack .st img{width:100%;height:100%;object-fit:cover}
+.ostack .more{font-size:11px;color:var(--mut);font-weight:700;margin-left:-6px;z-index:1}
+.ostack .cbadge{background:var(--acc);color:#fff;font-size:12px;font-weight:800;min-width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;padding:0 7px;box-shadow:0 2px 8px rgba(124,92,255,.4)}
 .cuotas{display:flex;gap:4px;margin-top:10px}
 .cq{flex:1;height:6px;border-radius:3px;background:var(--line)}
 .cq.on{background:var(--c-blue)}
@@ -194,6 +201,20 @@ nav button.on{color:var(--acc2)}
 .ev p{font-size:12px;color:var(--mut)}
 .ev-date{font-size:12px;color:var(--mut);text-align:right;flex-shrink:0}
 .sect-title{font-size:14px;font-weight:700;margin:18px 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+/* inicio */
+.hi{font-size:22px;font-weight:800;letter-spacing:-.4px;margin:4px 0 2px}
+.hdate{font-size:13px;color:var(--mut);text-transform:capitalize}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.hcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:left;position:relative}
+.hcard:active{transform:scale(.97)}
+.hcard .ic{font-size:22px}
+.hcard b{display:block;font-size:19px;margin-top:6px;letter-spacing:-.3px}
+.hcard small{font-size:12px;color:var(--mut)}
+.hcard .go{position:absolute;top:12px;right:12px;color:var(--mut);font-size:16px}
+.hcard.wide{grid-column:1/-1;display:flex;align-items:center;gap:14px}
+.hcard.wide .ic{font-size:26px}
+.hcard.wide b{margin:0;font-size:17px}
+.hlink{width:100%;text-align:center;padding:10px;border:1px dashed var(--line);border-radius:12px;color:var(--acc2);font-size:13px;margin-top:10px}
 .invpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .invpick button{background:var(--card2);border:1.5px solid var(--line);border-radius:12px;padding:8px 6px;text-align:left}
 .invpick button.on{border-color:var(--acc)}
@@ -225,6 +246,8 @@ nav button.on{color:var(--acc2)}
 <button class="fab" id="fab" aria-label="Agregar">+</button>
 
 <nav id="nav">
+  <button data-v="home" class="on">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Inicio</button>
   <button data-v="agenda">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4m8-4v4"/></svg>Agenda</button>
   <button data-v="orders" class="on">
@@ -254,7 +277,7 @@ const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","
 const DOW=["D","L","M","M","J","V","S"];
 const KEY="ropa_data_v2";
 let db = load();
-let view="orders", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null;
+let view="home", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null;
 
 function load(){
   try{
@@ -332,9 +355,10 @@ function render(){
   const pend=db.orders.filter(o=>o.estado!=="paid");
   const sum=a=>a.reduce((s,x)=>s+total(x),0);
   document.getElementById("subtitle").textContent=
-    {agenda:"Tu agenda",orders:"Catálogo de ventas",inventory:"Inventario de productos",clients:"Tus clientes",settings:"Configuración"}[view];
+    {home:"Todo tu negocio en un vistazo",agenda:"Tu agenda",orders:"Catálogo de ventas",inventory:"Inventario de productos",clients:"Tus clientes",settings:"Configuración"}[view];
   document.getElementById("stats").innerHTML =
-    (view==="orders")
+    (view==="home")?``
+    :(view==="orders")
     ?`<div class="stat"><b>${fmt(sum(paid))}</b><small>Cobrado</small></div>
       <div class="stat"><b>${fmt(sum(pend))}</b><small>Por cobrar</small></div>
       <div class="stat"><b>${db.orders.length}</b><small>Pedidos</small></div>`
@@ -350,6 +374,7 @@ function render(){
   document.getElementById("fab").style.display = ["orders","inventory","clients","agenda"].includes(view)?"block":"none";
 
   const main=document.getElementById("main");
+  if(view==="home")return renderHome(main);
   if(view==="orders")return renderOrders(main);
   if(view==="inventory")return renderInventory(main);
   if(view==="clients")return renderClients(main);
@@ -357,7 +382,58 @@ function render(){
   main.innerHTML=renderSettings(); wireSettings();
 }
 
+/* ---------- Inicio ---------- */
+function renderHome(main){
+  const paidO=db.orders.filter(o=>o.estado==="paid");
+  const pendO=db.orders.filter(o=>o.estado!=="paid");
+  const dueO=db.orders.filter(o=>o.estado==="due");
+  const sum=a=>a.reduce((s,x)=>s+total(x),0);
+  const today=new Date();
+  const dsem=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const upcoming=[];
+  const allD=[...new Set([
+    ...db.orders.filter(o=>o.fecha).map(o=>o.fecha),
+    ...db.events.filter(e=>e.date).map(e=>e.date)
+  ])].filter(d=>d>=dstr(today)).sort();
+  allD.slice(0,5).forEach(ds=>{
+    db.orders.filter(o=>o.fecha===ds).forEach(o=>upcoming.push({ds,tipo:"o",id:o.id,titulo:esc(o.cliente),sub:(o.items||[{}])[0].name||"Pedido",monto:fmt(total(o))}));
+    db.events.filter(e=>e.date===ds).forEach(e=>upcoming.push({ds,tipo:"e",id:e.id,titulo:esc(e.title),sub:e.orderId?"Pedido vinculado":"Evento"}));
+  });
+  main.innerHTML=`
+    <div class="hi">Hola 👋</div>
+    <div class="hdate">${dsem[today.getDay()]}, ${today.getDate()} de ${MESES[today.getMonth()]}</div>
+    <div class="hgrid">
+      <button class="hcard" data-go="orders"><span class="go">›</span><span class="ic">🧾</span><b>${fmt(sum(pendO))}</b><small>Por cobrar · ${pendO.length} pedido${pendO.length!==1?"s":""}</small></button>
+      <button class="hcard" data-go="orders"><span class="go">›</span><span class="ic">✅</span><b>${fmt(sum(paidO))}</b><small>Cobrado · ${paidO.length} pedido${paidO.length!==1?"s":""}</small></button>
+      <button class="hcard" data-go="orders"><span class="go">›</span><span class="ic">⏳</span><b>${dueO.length}</b><small>En ${dueO.length===1?"cuota":"cuotas"}</small></button>
+      <button class="hcard" data-go="agenda"><span class="go">›</span><span class="ic">📅</span><b>${allD.length}</b><small>Días con cosas en agenda</small></button>
+      <button class="hcard" data-go="inventory"><span class="go">›</span><span class="ic">👗</span><b>${db.inventory.length}</b><small>Producto${db.inventory.length!==1?"s":""} en inventario</small></button>
+      <button class="hcard" data-go="clients"><span class="go">›</span><span class="ic">🧑‍🤝‍🧑</span><b>${db.clients.length}</b><small>Cliente${db.clients.length!==1?"s":""}</small></button>
+    </div>
+    ${upcoming.length?`<div class="sect-title">Próximos en agenda</div>
+      ${upcoming.slice(0,4).map(u=>`<div class="ev" data-${u.tipo}="${u.id}" data-kind="${u.tipo}">
+        <div class="dot" style="background:${u.tipo==="o"?"var(--c-orange)":"var(--acc)"}"></div>
+        <div style="flex:1;min-width:0"><h4>${u.titulo}</h4><p>${u.sub}${u.monto?" · "+u.monto:""}</p></div>
+        <div class="ev-date">${fdate(u.ds)}</div></div>`).join("")}`:""}
+    ${pendO.length?`<div class="sect-title">Pendientes de cobro</div>
+      ${pendO.slice(0,3).map(o=>{
+        const st=ST[o.estado]||ST.new;
+        return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
+          <div class="row1"><h3>${esc(o.cliente)}</h3><span class="total">${fmt(total(o))}</span></div>
+          <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
+      }).join("")}
+      <button class="hlink" data-go="orders">Ver todos los pedidos ›</button>`:""}`;
+  main.querySelectorAll("[data-go]").forEach(el=>el.onclick=()=>{ view=el.dataset.go; render(); });
+  main.querySelectorAll("[data-o]").forEach(el=>el.onclick=()=>openOrder(el.dataset.o));
+  main.querySelectorAll("[data-e]").forEach(el=>el.onclick=()=>openEvent(el.dataset.e));
+}
+
 /* ---------- Pedidos ---------- */
+function itemThumb(i){
+  const inv=db.inventory.find(x=>x.name===i.name);
+  if(inv&&inv.photo)return`<span class="st"><img src="${inv.photo}"></span>`;
+  return`<span class="st">${inv?(CAT_ICON[inv.cat]||"🛍️"):"🛍️"}</span>`;
+}
 function renderOrders(main){
   const q=query.toLowerCase();
   let list=db.orders.filter(o=>{
@@ -375,9 +451,17 @@ function renderOrders(main){
       (o.estado==="due"&&cuotas)?`<span class="b msg">Cuota ${Math.min(paidC+1,cuotas)} de ${cuotas}</span>`:""
     ].join("");
     const cuo=o.estado==="due"?`<div class="cuotas">${Array.from({length:cuotas},(_,i)=>`<div class="cq ${i<paidC?"on":""}"></div>`).join("")}</div>`:"";
+    const its=o.items||[];
+    const shown=its.slice(0,4);
+    const stack=its.length?`<div class="ostack">
+      <div class="stack">${shown.map(itemThumb).join("")}${its.length>4?`<span class="st more">+${its.length-4}</span>`:""}</div>
+      <span class="cbadge">${its.reduce((s,i)=>s+(Number(i.qty)||1),0)}</span>
+      <span style="font-size:12px;color:var(--mut)">${its.length===1?"producto":its.length+" productos"}</span>
+    </div>`:"";
     return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
+      ${stack}
       <div class="row1"><h3>${esc(o.cliente)||"Sin nombre"}</h3><span class="total">${fmt(total(o))}</span></div>
-      <div class="items">${esc((o.items||[]).map(i=>`${i.qty>1?i.qty+"× ":""}${i.name}`).join(" · "))||"Sin productos"}${o.fecha?`<br>📅 ${fdate(o.fecha)}`:""}</div>
+      <div class="items">${esc(its.map(i=>`${i.qty>1?i.qty+"× ":""}${i.name}`).join(" · "))||"Sin productos"}${o.fecha?`<br>📅 ${fdate(o.fecha)}`:""}</div>
       <div class="badges">${chips}</div>${cuo}</div>`;
   }).join("");
   main.querySelectorAll(".o").forEach(el=>el.onclick=()=>openOrder(el.dataset.id));
@@ -797,7 +881,7 @@ function openOrder(id){
     <button class="ghost danger" id="delBtn">Eliminar pedido</button>
     <button class="ghost" onclick="closeSheet()">Cerrar</button>
   </div>`);
-  document.getElementById("editBtn").onclick=()=>{ openSheet(editorShell(o)); };
+  document.getElementById("editBtn").onclick=()=>openEditor(o);
   document.getElementById("delBtn").onclick=()=>{
     if(!confirm("¿Eliminar este pedido?"))return;
     db.orders=db.orders.filter(x=>x.id!==id); save(); closeSheet(); toast("Pedido eliminado");
@@ -815,7 +899,6 @@ function openOrder(id){
   if(document.getElementById("cq-plus"))document.getElementById("cq-plus").onclick=()=>bump(1);
   if(document.getElementById("cq-minus"))document.getElementById("cq-minus").onclick=()=>bump(-1);
 }
-function editorShell(o){ openEditor(o); }
 
 /* ---------- Ajustes ---------- */
 function renderSettings(){
@@ -923,7 +1006,7 @@ function trapBack(){ history.pushState({t:Date.now()},""); }
 trapBack();
 window.addEventListener("popstate",()=>{
   if(document.getElementById("sheet").classList.contains("open")){ closeSheet(); }
-  else if(view!=="orders"){ view="orders"; render(); }
+  else if(view!=="home"){ view="home"; render(); }
   trapBack();
 });
 </script>
