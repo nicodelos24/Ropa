@@ -608,7 +608,7 @@ function openInvEditor(it){
   const isNew=!it; it=it||{id:uid("i"),name:"",price:"",photo:null,cat:"vestido"};
   let cat=it.cat||"vestido";
   openSheet(`<div class="grab"></div><h2>${isNew?"Nuevo producto":"Editar producto"}</h2>
-    ${it.photo?`<img class="inv-photo" src="${esc(it.photo)}" style="border-radius:14px;margin-top:12px">`:""}
+    <div id="inv-prev">${it.photo?`<img class="inv-photo" src="${esc(it.photo)}" style="border-radius:14px;margin-top:12px">`:""}</div>
     <input type="file" id="inv-photo" accept="image/*" style="display:none">
     <input type="file" id="inv-cam" accept="image/*" capture="environment" style="display:none">
     <div style="display:flex;gap:8px;margin-top:12px">
@@ -622,6 +622,10 @@ function openInvEditor(it){
     <label>Precio</label><input id="inv-price" inputmode="numeric" value="${it.price??""}" placeholder="$">
     <button class="big" id="inv-save">${isNew?"Agregar al inventario":"Guardar cambios"}</button>
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+  const updPrev=d=>{
+    it.photo=d;
+    document.getElementById("inv-prev").innerHTML=`<img class="inv-photo" src="${esc(d)}" style="border-radius:14px;margin-top:12px">`;
+  };
   document.querySelectorAll("#seg-cat button").forEach(b=>b.onclick=()=>{
     cat=b.dataset.k;
     document.querySelectorAll("#seg-cat button").forEach(x=>x.classList.toggle("on",x===b));
@@ -630,11 +634,11 @@ function openInvEditor(it){
   document.getElementById("photoBtn").onclick=()=>document.getElementById("inv-photo").click();
   document.getElementById("inv-cam").onchange=e=>{
     const f=e.target.files[0]; if(!f)return;
-    compressPhoto(f,d=>{ it.photo=d; openInvEditor(it); });
+    compressPhoto(f,updPrev);
   };
   document.getElementById("inv-photo").onchange=e=>{
     const f=e.target.files[0]; if(!f)return;
-    compressPhoto(f,d=>{ it.photo=d; openInvEditor(it); });
+    compressPhoto(f,updPrev);
   };
   document.getElementById("inv-save").onclick=()=>{
     const name=document.getElementById("inv-name").value.trim();
@@ -810,6 +814,7 @@ function openEditor(orig, presetClient, presetDate){
     </div>
     <div id="mode-inv">${invHtml([])}</div>
     <div id="mode-man" style="display:none">
+      <input type="file" id="man-photo" accept="image/*" capture="environment" style="display:none">
       <div id="plist"></div>
       <button class="addp" id="addp">+ Agregar producto</button>
     </div>
@@ -826,6 +831,10 @@ function openEditor(orig, presetClient, presetDate){
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
 
   let items=JSON.parse(JSON.stringify(base.items&&base.items.length?base.items:[{name:"",price:"",qty:1}]));
+  items.forEach(i=>{
+    const ex=db.inventory.find(x=>(x.name||"").toLowerCase()===(i.name||"").toLowerCase());
+    if(ex&&ex.photo&&!i.photo)i.photo=ex.photo;
+  });
   const fromInv=orig&&(orig.items||[]).every(i=>db.inventory.some(x=>x.name===i.name));
   let mode=orig?(fromInv?"inv":"man"):"inv", estado=base.estado;
   let picked={}; // iid -> {qty, price}
@@ -850,11 +859,22 @@ function openEditor(orig, presetClient, presetDate){
       <div class="prow">
         <input class="pn" data-i="${i}" value="${esc(it.name)}" placeholder="Producto">
         <input class="pp price" data-i="${i}" value="${it.price??""}" inputmode="numeric" placeholder="$">
+        <button class="del mpic" data-i="${i}" title="Foto" style="opacity:${it.photo?1:.35}">📷</button>
         <button class="del" data-i="${i}">×</button>
       </div>`).join("");
     document.querySelectorAll(".pn").forEach(el=>el.oninput=()=>{items[el.dataset.i].name=el.value;});
     document.querySelectorAll(".pp").forEach(el=>el.oninput=()=>{ items[el.dataset.i].price=Number(el.value.replace(/\D/g,""))||0; calc(); });
     document.querySelectorAll(".prow .del").forEach(el=>el.onclick=()=>{ items.splice(el.dataset.i,1); if(!items.length)items=[{name:"",price:"",qty:1}]; drawMan(); calc(); });
+    document.querySelectorAll(".mpic").forEach(el=>el.onclick=()=>{
+      manPhotoIdx=Number(el.dataset.i);
+      document.getElementById("man-photo").click();
+    });
+  };
+  let manPhotoIdx=null;
+  document.getElementById("man-photo").onchange=e=>{
+    const f=e.target.files[0]; e.target.value="";
+    if(f==null||manPhotoIdx==null)return;
+    compressPhoto(f,d=>{ items[manPhotoIdx].photo=d; manPhotoIdx=null; drawMan(); });
   };
   drawInv(); drawMan(); calc();
   document.querySelectorAll("#mode-seg button").forEach(x=>x.classList.toggle("on",x.dataset.m===mode));
@@ -902,6 +922,19 @@ function openEditor(orig, presetClient, presetDate){
       clean=items.filter(i=>i.name.trim());
       if(!clean.length){ toast("Agrega al menos un producto"); return; }
       clean.forEach(i=>i.qty=i.qty||1);
+      // productos escritos a mano: se guardan también en el inventario
+      var nuevos=0;
+      clean.forEach(i=>{
+        const nm=i.name.trim();
+        const ex=db.inventory.find(x=>(x.name||"").toLowerCase()===nm.toLowerCase());
+        if(!ex){
+          db.inventory.push({id:uid("i"),name:nm,price:Number(i.price)||0,cat:"otro",photo:i.photo||null});
+          log("inv_new",`${nm} · desde pedido`);
+          nuevos++;
+        }else if(i.photo&&!ex.photo){
+          ex.photo=i.photo;
+        }
+      });
     }
     const data={
       id:orig?orig.id:uid("o"),
@@ -918,7 +951,8 @@ function openEditor(orig, presetClient, presetDate){
     const cl=upsertClient(orig||data);
     if(data.tel)cl.tel=data.tel;
     log(orig?"order_edit":"order_new",`${cliente} · ${fmt(total(data))}`);
-    save(); closeSheet(); toast("Guardado ✓");
+    save(); closeSheet();
+    toast(nuevos?`Guardado ✓ · ${nuevos} producto${nuevos>1?"s":""} al inventario`:"Guardado ✓");
   };
 }
 
