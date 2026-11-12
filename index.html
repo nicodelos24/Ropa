@@ -113,12 +113,29 @@ html[data-theme="light"] .b.new{background:#e8e8f0;color:#55556a}
 .o:active{transform:scale(.985)}
 .stat b,.o .total{font-variant-numeric:tabular-nums}
 /* animaciones suaves */
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.o,.stat,.sett-card{animation:fadeUp .3s ease both}
-.o:nth-child(2),.stat:nth-child(2){animation-delay:.04s}
-.o:nth-child(3),.stat:nth-child(3){animation-delay:.08s}
-.o:nth-child(4),.stat:nth-child(4){animation-delay:.12s}
-.o:nth-child(5){animation-delay:.16s}
+@keyframes rise{
+  from{opacity:0;transform:translateY(16px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+/* inicio: entrada con aire */
+.hi,.hdate,.hcard,.sect-title{animation:rise .5s cubic-bezier(.22,1,.36,1) both}
+.hi{animation-delay:.03s}
+.hdate{animation-delay:.08s}
+.hgrid .hcard:nth-child(1){animation-delay:.12s}
+.hgrid .hcard:nth-child(2){animation-delay:.17s}
+.hgrid .hcard:nth-child(3){animation-delay:.22s}
+.hgrid .hcard:nth-child(4){animation-delay:.27s}
+.hgrid .hcard:nth-child(5){animation-delay:.32s}
+.hgrid .hcard:nth-child(6){animation-delay:.37s}
+.sect-title{animation-delay:.34s}
+.sect-title ~ .o,.sect-title ~ .hlink{animation:rise .5s cubic-bezier(.22,1,.36,1) both;animation-delay:.42s}
+.sect-title ~ .ev{animation:rise .5s cubic-bezier(.22,1,.36,1) both;animation-delay:.42s}
+.hcard,.ev{will-change:opacity,transform}
+/* resto de secciones: descrecida, apenas asoman */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.o,.stat,.sett-card,.ev{animation:fadeUp .18s ease both}
+.stat:nth-child(2){animation-delay:.03s}
+.stat:nth-child(3){animation-delay:.06s}
 .sheet.open{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .chip,nav button,.theme-btn,.seg button{transition:transform .12s ease,color .2s,background .2s}
