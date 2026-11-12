@@ -1323,21 +1323,15 @@ function renderNegocios(main){
         <p style="font-size:13px">Código: <b style="color:var(--acc2)">${esc(n.codigo)}</b> ${n.usadoAdmin?"· activado":"· sin activar"}</p>
         <p style="font-size:12px;color:var(--mut)">${us.size} cuenta${us.size!==1?"s":""}${us.size?": "+us.docs.map(x=>esc(x.data().nombre)+" ("+(x.data().rol==="admin"?"admin":x.data().rol==="owner"?"dueño":"vendedora")+")").join(", "):""}</p>
         <button class="ghost" id="ng-tg-${d.id}" style="margin-top:8px">${n.activo===false?"▶ Reactivar":"⏸ Pausar"}</button>
-        ${FB.perfil&&FB.perfil.negocioId===d.id?`<span style="font-size:12px;color:var(--c-green);margin-left:8px">· activo en este teléfono</span>`:`<button class="ghost" id="ng-ac-${d.id}" style="margin-left:8px">Activar aquí</button>`}</div>`;
+        ${FB.perfil&&FB.perfil.negocioId===d.id?`<span style="font-size:12px;color:var(--c-green);margin-left:8px">· activo en este teléfono</span>`:""}</div>`;
     }));
     box.innerHTML=rows.join("");
     snap.docs.forEach(d=>{
-      const b=document.getElementById("ng-tg-"+d.id),a=document.getElementById("ng-ac-"+d.id);
+      const b=document.getElementById("ng-tg-"+d.id);
       if(b)b.onclick=async()=>{
         const n=d.data();
         await fsdb.collection("negocios").doc(d.id).update({activo:n.activo===false});
         toast(n.activo===false?"Reactivado ✓":"Pausado");
-      };
-      if(a)a.onclick=async()=>{
-        await fsdb.collection("usuarios").doc(FB.uid).update({negocioId:d.id});
-        FB.perfil.negocioId=d.id;
-        toast("Activado en este teléfono ✓");
-        subscribe();
       };
     });
   });
