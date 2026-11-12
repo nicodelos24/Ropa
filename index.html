@@ -46,7 +46,8 @@ button{cursor:pointer;border:none;background:none}
 .toprow{display:flex;justify-content:space-between;align-items:center}
 .brand{font-size:24px;font-weight:800;letter-spacing:-.5px}
 .brand span{color:var(--acc2)}
-.theme-btn{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);font-size:17px}
+.theme-btn{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--txt);display:flex;align-items:center;justify-content:center}
+.theme-btn svg{width:19px;height:19px}
 .sub{font-size:13px;color:var(--mut);margin-top:2px}
 .stats{display:flex;gap:8px;margin-top:12px}
 .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
@@ -232,7 +233,7 @@ nav button.on{color:var(--acc2)}
       <div class="brand">Ropa<span>.</span></div>
       <div class="sub" id="subtitle"></div>
     </div>
-    <button class="theme-btn" id="themeBtn" aria-label="Cambiar tema">🌙</button>
+    <button class="theme-btn" id="themeBtn" aria-label="Cambiar tema"></button>
   </div>
   <div class="stats" id="stats"></div>
   <div class="searchrow" id="searchrow">
@@ -256,6 +257,8 @@ nav button.on{color:var(--acc2)}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v9"/></svg>Inventario</button>
   <button data-v="clients">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M17 8.5a3 3 0 1 1 .5 5.9M17.5 14.5c2.6.3 4 2 4 4.5"/></svg>Clientes</button>
+  <button data-v="history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/><path d="M12 8v4l3 2"/></svg>Historial</button>
   <button data-v="settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10l2.1 2.1M19.1 4.9L17 7m-10 10l-2.1 2.1"/></svg>Ajustes</button>
 </nav>
@@ -276,18 +279,28 @@ const CAT_ICON=Object.fromEntries(CATS.map(c=>[c[0],c[1]]));
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const DOW=["D","L","M","M","J","V","S"];
 const KEY="ropa_data_v2";
+const DEFAULT_USERS=[
+  {id:"u1",name:"Dueña",rol:"Dueña",email:""},
+  {id:"u2",name:"Socia",rol:"Socia",email:""}
+];
 let db = load();
-let view="home", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null;
+let view="home", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null, logFilter="all";
 
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(KEY));
-    if(d&&Array.isArray(d.orders))return Object.assign({orders:[],inventory:[],clients:[],events:[]},d);
+    if(d&&Array.isArray(d.orders))return Object.assign({
+      orders:[],inventory:[],clients:[],events:[],
+      users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"
+    },d);
     // migrate v1
     const v1=JSON.parse(localStorage.getItem("ropa_data_v1")||"null");
-    if(v1&&Array.isArray(v1.orders))return Object.assign({orders:v1.orders,inventory:[],clients:[],events:[]},d||{});
-    return {orders:[],inventory:[],clients:[],events:[]};
-  }catch(e){return{orders:[],inventory:[],clients:[],events:[]}}
+    if(v1&&Array.isArray(v1.orders))return Object.assign({
+      orders:v1.orders,inventory:[],clients:[],events:[],
+      users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"
+    },d||{});
+    return {orders:[],inventory:[],clients:[],events:[],users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"};
+  }catch(e){return{orders:[],inventory:[],clients:[],events:[],users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"}}
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
 function fmt(n){ return "$"+Number(n||0).toLocaleString("es-MX"); }
@@ -321,10 +334,12 @@ function fmtTel(t){
 }
 
 /* ---------- theme ---------- */
+const IC_MOON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.2A8.4 8.4 0 1 1 10.8 3.4a6.6 6.6 0 0 0 9.8 9.8z"/></svg>`;
+const IC_SUN=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2m0 14.6v2.2M2.5 12h2.2m14.6 0h2.2M5.2 5.2l1.6 1.6m10.4 10.4l1.6 1.6m0-13.6l-1.6 1.6M6.8 17.2l-1.6 1.6"/></svg>`;
 function applyTheme(){
   const t=db.theme||"dark";
   document.documentElement.dataset.theme=t;
-  document.getElementById("themeBtn").textContent=t==="dark"?"🌙":"☀️";
+  document.getElementById("themeBtn").innerHTML=t==="dark"?IC_MOON:IC_SUN;
 }
 document.getElementById("themeBtn").onclick=()=>{
   db.theme=(db.theme||"dark")==="dark"?"light":"dark";
@@ -342,11 +357,37 @@ function findClient(o){
 }
 function upsertClient(o){
   let c=findClient(o);
-  if(!c){ c={id:uid("c"),name:o.cliente,tel:o.tel||"",notas:"",created:Date.now()}; db.clients.push(c); }
+  if(!c){ c={id:uid("c"),name:o.cliente,tel:o.tel||"",notas:"",created:Date.now()}; db.clients.push(c); log("client_new",o.cliente); }
   if(o.tel&&!c.tel)c.tel=o.tel;
   o.clienteId=c.id;
   return c;
 }
+
+/* ---------- auditoría ---------- */
+function userName(uid_){ const u=(db.users||[]).find(x=>x.id===uid_); return u?u.name:"—"; }
+function log(action, detail){
+  db.log=db.log||[];
+  db.log.push({id:uid("l"),ts:Date.now(),user:db.usuarioId||"u1",action,detail:detail||""});
+  if(db.log.length>600)db.log=db.log.slice(-600);
+}
+const LOG_META={
+  order_new:{ic:"🧾",l:"Pedido creado"},
+  order_edit:{ic:"✏️",l:"Pedido editado"},
+  order_del:{ic:"🗑️",l:"Pedido eliminado"},
+  quota:{ic:"💵",l:"Cuota registrada"},
+  order_paid:{ic:"✅",l:"Pedido pagado"},
+  inv_new:{ic:"👗",l:"Producto agregado"},
+  inv_edit:{ic:"✏️",l:"Producto editado"},
+  inv_del:{ic:"🗑️",l:"Producto eliminado"},
+  event_new:{ic:"📅",l:"Evento agendado"},
+  event_edit:{ic:"✏️",l:"Evento editado"},
+  event_del:{ic:"🗑️",l:"Evento eliminado"},
+  client_new:{ic:"🧑",l:"Cliente creado"},
+  client_edit:{ic:"✏️",l:"Cliente editado"},
+  client_del:{ic:"🗑️",l:"Cliente eliminado"},
+  user_switch:{ic:"🔄",l:"Cambio de cuenta"},
+  backup:{ic:"📥",l:"Respaldo"},
+};
 
 /* ================= RENDER ================= */
 function render(){
@@ -355,7 +396,7 @@ function render(){
   const pend=db.orders.filter(o=>o.estado!=="paid");
   const sum=a=>a.reduce((s,x)=>s+total(x),0);
   document.getElementById("subtitle").textContent=
-    {home:"Todo tu negocio en un vistazo",agenda:"Tu agenda",orders:"Catálogo de ventas",inventory:"Inventario de productos",clients:"Tus clientes",settings:"Configuración"}[view];
+    {home:"Todo tu negocio en un vistazo",agenda:"Tu agenda",orders:"Catálogo de ventas",inventory:"Inventario de productos",clients:"Tus clientes",history:"Movimientos de cada cuenta",settings:"Configuración"}[view];
   document.getElementById("stats").innerHTML =
     (view==="home")?``
     :(view==="orders")
@@ -379,7 +420,26 @@ function render(){
   if(view==="inventory")return renderInventory(main);
   if(view==="clients")return renderClients(main);
   if(view==="agenda")return renderAgenda(main);
+  if(view==="history")return renderHistory(main);
   main.innerHTML=renderSettings(); wireSettings();
+}
+
+/* ---------- Historial ---------- */
+function renderHistory(main){
+  const chips=[["all","Todos"],["u1",userName("u1")],["u2",userName("u2")]];
+  const list=(db.log||[]).filter(e=>logFilter==="all"||e.user===logFilter).slice().reverse();
+  main.innerHTML=`
+    <div class="chips" style="margin:2px 0 12px">${chips.map(([k,l],i)=>`<button class="chip c-neutral ${logFilter===k?"on":""}" data-k="${k}">${l}</button>`).join("")}</div>
+    ${list.length?list.map(e=>{
+      const m=LOG_META[e.action]||{ic:"•",l:e.action};
+      const d=new Date(e.ts);
+      const hh=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+      const dtxt=(d.getDate()===new Date().getDate())?"Hoy":d.getDate()+" "+MESES[d.getMonth()].slice(0,3);
+      return `<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${m.ic}</div>
+        <div style="flex:1;min-width:0"><h4 style="font-size:14px">${m.l}</h4><p>${esc(e.detail)}</p></div>
+        <div class="ev-date">${dtxt}<br>${hh} · <b style="color:var(--acc2)">${esc(userName(e.user))}</b></div></div>`;
+    }).join(""):`<div class="empty"><b>Sin movimientos todavía</b>Cada pedido, producto, evento o cambio<br>quedará registrado aquí con su autor.</div>`}`;
+  main.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ logFilter=c.dataset.k; render(); });
 }
 
 /* ---------- Inicio ---------- */
@@ -419,6 +479,7 @@ function renderHome(main){
       ${pendO.slice(0,3).map(o=>{
         const st=ST[o.estado]||ST.new;
         return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
+          ${orderStackHTML(o)}
           <div class="row1"><h3>${esc(o.cliente)}</h3><span class="total">${fmt(total(o))}</span></div>
           <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
       }).join("")}
@@ -434,6 +495,16 @@ function itemThumb(i){
   if(inv&&inv.photo)return`<span class="st"><img src="${inv.photo}"></span>`;
   return`<span class="st">${inv?(CAT_ICON[inv.cat]||"🛍️"):"🛍️"}</span>`;
 }
+function orderStackHTML(o){
+  const its=o.items||[];
+  if(!its.length)return"";
+  const shown=its.slice(0,4);
+  return `<div class="ostack">
+    <div class="stack">${shown.map(itemThumb).join("")}${its.length>4?`<span class="st more">+${its.length-4}</span>`:""}</div>
+    <span class="cbadge">${its.reduce((s,i)=>s+(Number(i.qty)||1),0)}</span>
+    <span style="font-size:12px;color:var(--mut)">${its.length===1?"producto":its.length+" productos"}</span>
+  </div>`;
+}
 function renderOrders(main){
   const q=query.toLowerCase();
   let list=db.orders.filter(o=>{
@@ -444,22 +515,15 @@ function renderOrders(main){
   if(!list.length){ main.innerHTML=`<div class="empty"><b>Sin pedidos aquí</b>Usa el botón + para registrar un pedido:<br>cliente, productos y estado.</div>`; return; }
   main.innerHTML=list.map(o=>{
     const st=ST[o.estado]||ST.new;
+    const its=o.items||[];
     const paidC=Number(o.cuotasPagadas)||0, cuotas=Number(o.cuotas)||2;
     const chips=[
       `<span class="b ${st.c}">${st.l}</span>`,
-      o.vendedor==="Mamá"?`<span class="b mama">Lo tiene Mamá</span>`:"",
       (o.estado==="due"&&cuotas)?`<span class="b msg">Cuota ${Math.min(paidC+1,cuotas)} de ${cuotas}</span>`:""
     ].join("");
     const cuo=o.estado==="due"?`<div class="cuotas">${Array.from({length:cuotas},(_,i)=>`<div class="cq ${i<paidC?"on":""}"></div>`).join("")}</div>`:"";
-    const its=o.items||[];
-    const shown=its.slice(0,4);
-    const stack=its.length?`<div class="ostack">
-      <div class="stack">${shown.map(itemThumb).join("")}${its.length>4?`<span class="st more">+${its.length-4}</span>`:""}</div>
-      <span class="cbadge">${its.reduce((s,i)=>s+(Number(i.qty)||1),0)}</span>
-      <span style="font-size:12px;color:var(--mut)">${its.length===1?"producto":its.length+" productos"}</span>
-    </div>`:"";
     return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
-      ${stack}
+      ${orderStackHTML(o)}
       <div class="row1"><h3>${esc(o.cliente)||"Sin nombre"}</h3><span class="total">${fmt(total(o))}</span></div>
       <div class="items">${esc(its.map(i=>`${i.qty>1?i.qty+"× ":""}${i.name}`).join(" · "))||"Sin productos"}${o.fecha?`<br>📅 ${fdate(o.fecha)}`:""}</div>
       <div class="badges">${chips}</div>${cuo}</div>`;
@@ -485,6 +549,7 @@ function renderInventory(main){
     const it=db.inventory.find(x=>x.id===b.dataset.id);
     if(b.dataset.act==="del"){
       if(!confirm("¿Eliminar este producto del inventario?"))return;
+      log("inv_del",it.name);
       db.inventory=db.inventory.filter(x=>x.id!==b.dataset.id); save(); render(); toast("Producto eliminado");
     }else openInvEditor(it);
   });
@@ -528,6 +593,7 @@ function openInvEditor(it){
     it.price=Number(document.getElementById("inv-price").value.replace(/\D/g,""))||0;
     it.cat=cat;
     if(isNew)db.inventory.push(it);
+    log(isNew?"inv_new":"inv_edit",`${name} · ${fmt(it.price)}`);
     save(); closeSheet(); toast("Inventario actualizado ✓");
   };
 }
@@ -572,6 +638,7 @@ function openClient(id){
     ${ords.length?ords.map(o=>{
       const st=ST[o.estado]||ST.new;
       return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
+        ${orderStackHTML(o)}
         <div class="row1"><h3 style="font-size:14px">${esc((o.items||[]).map(i=>i.name).join(", "))||"Pedido"}</h3><span class="total" style="font-size:14px">${fmt(total(o))}</span></div>
         <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
     }).join(""):`<p style="font-size:13px;color:var(--mut)">Sin pedidos todavía.</p>`}
@@ -590,10 +657,12 @@ function openClient(id){
       c.name=document.getElementById("ce-name").value.trim()||c.name;
       c.tel=document.getElementById("ce-tel").value.trim();
       c.notas=document.getElementById("ce-notas").value.trim();
+      log("client_edit",c.name);
       save(); openClient(c.id); toast("Cliente actualizado ✓");
     };
     document.getElementById("ce-del").onclick=()=>{
       if(!confirm("¿Eliminar cliente? Sus pedidos se conservan."))return;
+      log("client_del",c.name);
       db.clients=db.clients.filter(x=>x.id!==c.id);
       save(); closeSheet(); toast("Cliente eliminado");
     };
@@ -639,8 +708,8 @@ function renderAgenda(main){
     const dayOrders=(ordersByDate[ds]||[]).map(o=>{
       const st=ST[o.estado]||ST.new;
       return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
+        ${orderStackHTML(o)}
         <div class="row1"><h3>${esc(o.cliente)}</h3><span class="total">${fmt(total(o))}</span></div>
-        <div class="items">${esc((o.items||[]).map(i=>i.name).join(" · "))}</div>
         <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
     }).join("");
     return dayEvents+dayOrders;
@@ -695,10 +764,12 @@ function openEventEditor(e, presetDate){
     const ord=oid?db.orders.find(x=>x.id===oid):null;
     e.cliente=ord?ord.cliente:e.cliente;
     if(isNew)db.events.push(e);
+    log(isNew?"event_new":"event_edit",`${title}${e.date?" · "+fdate(e.date):""}`);
     save(); closeSheet(); toast("Agendado ✓");
   };
   if(document.getElementById("ev-del"))document.getElementById("ev-del").onclick=()=>{
     if(!confirm("¿Eliminar evento?"))return;
+    log("event_del",e.title);
     db.events=db.events.filter(x=>x.id!==e.id); save(); closeSheet(); toast("Evento eliminado");
   };
 }
@@ -753,9 +824,6 @@ function openEditor(orig, presetClient, presetDate){
     <div id="cuotas-wrap" style="display:${base.estado==="due"?"block":"none"}">
       <label>Número de cuotas</label><input id="f-cuotas" type="number" min="2" max="12" value="${base.cuotas||2}">
     </div>
-    <label>Vendedor / quién lo tiene</label><div class="seg" id="seg-vend">
-      ${SELLERS.map(s=>`<button data-k="${s}" class="${base.vendedor===s?"on":""}">${s==="Mamá"?"Lo tiene Mamá":s}</button>`).join("")}
-    </div>
     <label>Fecha de entrega / recordatorio (opcional)</label><input id="f-fecha" type="date" value="${base.fecha||""}">
     <label>Notas (opcional)</label><textarea id="f-notas" rows="2" placeholder="Ej. Entregar el viernes">${esc(base.notas||"")}</textarea>
     <button class="big" id="saveBtn">${isNew?"Guardar pedido":"Guardar cambios"}</button>
@@ -763,7 +831,7 @@ function openEditor(orig, presetClient, presetDate){
 
   let items=JSON.parse(JSON.stringify(base.items&&base.items.length?base.items:[{name:"",price:"",qty:1}]));
   const fromInv=orig&&(orig.items||[]).every(i=>db.inventory.some(x=>x.name===i.name));
-  let mode=orig?(fromInv?"inv":"man"):"inv", estado=base.estado, vendedor=base.vendedor;
+  let mode=orig?(fromInv?"inv":"man"):"inv", estado=base.estado;
   let picked={}; // iid -> {qty, price}
   (base.items||[]).forEach(i=>{ const inv=db.inventory.find(x=>x.name===i.name); if(inv)picked[inv.id]={qty:i.qty||1,price:i.price}; });
   const calc=()=>{
@@ -809,10 +877,6 @@ function openEditor(orig, presetClient, presetDate){
     document.querySelectorAll("#seg-est button").forEach(x=>x.classList.toggle("on",x===b));
     document.getElementById("cuotas-wrap").style.display=estado==="due"?"block":"none";
   });
-  document.querySelectorAll("#seg-vend button").forEach(b=>b.onclick=()=>{
-    vendedor=b.dataset.k;
-    document.querySelectorAll("#seg-vend button").forEach(x=>x.classList.toggle("on",x===b));
-  });
   document.getElementById("f-tel").oninput=e=>{
     const pos=e.target.selectionStart;
     e.target.value=maskTel(e.target.value);
@@ -847,7 +911,7 @@ function openEditor(orig, presetClient, presetDate){
       id:orig?orig.id:uid("o"),
       created:orig?orig.created:Date.now(),
       cliente, tel:document.getElementById("f-tel").value.trim(),
-      estado, vendedor, items:clean,
+      estado, items:clean,
       cuotas:estado==="due"?Math.max(2,Number(document.getElementById("f-cuotas").value)||2):2,
       cuotasPagadas:orig?Number(orig.cuotasPagadas)||0:0,
       fecha:document.getElementById("f-fecha").value,
@@ -857,6 +921,7 @@ function openEditor(orig, presetClient, presetDate){
     else db.orders.push(data);
     const cl=upsertClient(orig||data);
     if(data.tel)cl.tel=data.tel;
+    log(orig?"order_edit":"order_new",`${cliente} · ${fmt(total(data))}`);
     save(); closeSheet(); toast("Guardado ✓");
   };
 }
@@ -868,8 +933,9 @@ function openOrder(id){
   const items=(o.items||[]).map(i=>`<div class="item"><span>${esc(i.name)}${i.qty>1?" ×"+i.qty:""}</span><span>${fmt(i.price*i.qty)}</span></div>`).join("");
   openSheet(`<div class="detail">
     <div class="grab"></div>
+    ${orderStackHTML(o)}
     <h2>${esc(o.cliente)||"Cliente"}</h2>
-    <div class="badges" style="margin-top:8px"><span class="b ${st.c}">${st.l}</span>${o.vendedor==="Mamá"?'<span class="b mama">Lo tiene Mamá</span>':""}</div>
+    <div class="badges" style="margin-top:8px"><span class="b ${st.c}">${st.l}</span></div>
     <div style="margin-top:14px">${items||""}</div>
     <div class="totalbar"><span>Total</span><b>${fmt(total(o))}</b></div>
     ${o.estado==="due"?`<div style="margin-top:14px;display:flex;gap:8px">
@@ -884,6 +950,7 @@ function openOrder(id){
   document.getElementById("editBtn").onclick=()=>openEditor(o);
   document.getElementById("delBtn").onclick=()=>{
     if(!confirm("¿Eliminar este pedido?"))return;
+    log("order_del",`${o.cliente} · ${fmt(total(o))}`);
     db.orders=db.orders.filter(x=>x.id!==id); save(); closeSheet(); toast("Pedido eliminado");
   };
   const waBtn=document.getElementById("waBtn");
@@ -893,7 +960,8 @@ function openOrder(id){
   };
   const bump=d=>{
     o.cuotasPagadas=Math.max(0,(Number(o.cuotasPagadas)||0)+d);
-    if(o.cuotasPagadas>=(o.cuotas||2)){ o.estado="paid"; toast("¡Pedido pagado por completo!"); }
+    if(o.cuotasPagadas>=(o.cuotas||2)){ o.estado="paid"; log("order_paid",`${o.cliente} · ${fmt(total(o))}`); toast("¡Pedido pagado por completo!"); }
+    else log("quota",`${o.cliente} · cuota ${o.cuotasPagadas} de ${o.cuotas||2}`);
     save(); render(); openOrder(id);
   };
   if(document.getElementById("cq-plus"))document.getElementById("cq-plus").onclick=()=>bump(1);
@@ -903,6 +971,18 @@ function openOrder(id){
 /* ---------- Ajustes ---------- */
 function renderSettings(){
   return `<div class="grab" style="margin-top:14px"></div><h2 style="font-size:22px;margin:8px 0 14px">Ajustes</h2>
+  <div class="sett-card"><h3>👤 Cuentas y perfil</h3>
+    <p>¿Quién está usando el teléfono ahora? Cada movimiento queda registrado con este nombre en el Historial.</p>
+    <div class="seg" id="seg-user" style="margin-top:10px">
+      ${(db.users||[]).map(u=>`<button data-k="${u.id}" class="${(db.usuarioId||"u1")===u.id?"on":""}">${esc(u.name)}</button>`).join("")}
+    </div>
+    <p style="margin-top:14px">Correos de recuperación (para cuando conectemos la base de datos y poder restablecer la contraseña):</p>
+    ${(db.users||[]).map(u=>`<div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <span style="font-size:13px;color:var(--mut);min-width:52px">${esc(u.name)}</span>
+      <input id="email-${u.id}" inputmode="email" value="${esc(u.email||"")}" placeholder="correo@ejemplo.com">
+    </div>`).join("")}
+    <button class="ghost" id="emails-save" style="margin-top:10px">Guardar correos</button>
+  </div>
   <div class="sett-card"><h3>🌗 Apariencia</h3>
     <p>Cambia entre modo oscuro y claro (también con el botón de arriba).</p>
     <button class="ghost" id="themeBtn2" style="margin-top:12px">Cambiar a modo ${((db.theme||"dark")==="dark")?"claro ☀️":"oscuro 🌙"}</button>
@@ -929,7 +1009,14 @@ function renderSettings(){
   <button class="ghost" id="backBtn">Volver a pedidos</button>`;
 }
 function wireSettings(){
-  document.getElementById("backBtn").onclick=()=>{ view="orders"; render(); };
+  document.getElementById("backBtn").onclick=()=>{ view="home"; render(); };
+  document.querySelectorAll("#seg-user button").forEach(b=>b.onclick=()=>{
+    if(db.usuarioId!==b.dataset.k){ db.usuarioId=b.dataset.k; log("user_switch","Ahora usa el teléfono: "+userName(b.dataset.k)); save(); toast("Cuenta: "+userName(b.dataset.k)); view="settings"; render(); }
+  });
+  document.getElementById("emails-save").onclick=()=>{
+    (db.users||[]).forEach(u=>{ const el=document.getElementById("email-"+u.id); if(el)u.email=el.value.trim(); });
+    save(); toast("Correos guardados ✓");
+  };
   document.getElementById("prefijo-save").onclick=()=>{
     let v=document.getElementById("prefijo-in").value.trim();
     if(v&&!v.startsWith("+"))v="+"+v.replace(/\D/g,"");
@@ -939,6 +1026,8 @@ function wireSettings(){
   const t2=document.getElementById("themeBtn2");
   if(t2)t2.onclick=()=>{ db.theme=(db.theme||"dark")==="dark"?"light":"dark"; save(); applyTheme(); view="settings"; render(); };
   document.getElementById("expBtn").onclick=()=>{
+    log("backup","Respaldo exportado");
+    save();
     const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
@@ -952,7 +1041,8 @@ function wireSettings(){
     r.onload=()=>{ try{
         const d=JSON.parse(r.result);
         if(!Array.isArray(d.orders))throw 0;
-        db=Object.assign({orders:[],inventory:[],clients:[],events:[],theme:db.theme},d);
+        db=Object.assign({orders:[],inventory:[],clients:[],events:[],theme:db.theme,prefijo:db.prefijo,users:db.users,usuarioId:db.usuarioId,log:db.log},d);
+        log("backup","Respaldo importado");
         save(); toast("Respaldo importado ✓"); view="orders"; render();
       }catch(err){ toast("Archivo no válido"); } };
     r.readAsText(f);
@@ -960,7 +1050,7 @@ function wireSettings(){
   document.getElementById("resetBtn").onclick=()=>{
     if(!confirm("¿Seguro que quieres borrar TODO?"))return;
     if(!confirm("Última confirmación: no se puede deshacer."))return;
-    db={orders:[],inventory:[],clients:[],events:[],theme:db.theme,prefijo:db.prefijo}; save(); toast("Todo borrado"); view="orders"; render();
+    db={orders:[],inventory:[],clients:[],events:[],theme:db.theme,prefijo:db.prefijo,users:db.users,usuarioId:db.usuarioId,log:db.log}; save(); toast("Todo borrado"); view="home"; render();
   };
 }
 
@@ -983,6 +1073,7 @@ function openNewClient(){
     const name=document.getElementById("nc-name").value.trim();
     if(!name){ toast("Escribe el nombre"); return; }
     db.clients.push({id:uid("c"),name,tel:document.getElementById("nc-tel").value.trim(),notas:document.getElementById("nc-notas").value.trim(),created:Date.now()});
+    log("client_new",name);
     save(); closeSheet(); toast("Cliente guardado ✓");
   };
 }
