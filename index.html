@@ -1112,7 +1112,10 @@ function save(){
   clearTimeout(save._t);
   save._t=setTimeout(pushNow,700);
 }
-auth.getRedirectResult().catch(e=>{ FB.gerr=(e.code||"")+" "+e.message; });
+auth.getRedirectResult().catch(e=>{
+  FB.gerr="GOOGLE: "+(e.code||"")+" "+e.message;
+  if(!FB.uid){ FB.perfil=null; render(); }
+});
 auth.onAuthStateChanged(async u=>{
   FB.uid=u?u.uid:null;
   if(!u){ FB.perfil=null;FB.pend=false;FB.pendName=null; if(FB.unsub){FB.unsub();FB.unsub=null;} if(FB.unorg){FB.unorg();FB.unorg=null;} render(); return; }
@@ -1173,7 +1176,8 @@ function renderAuthScreen(msg,mode){
   a.innerHTML=`
     <div class="alogo">Ropa<span>.</span></div>
     <div class="asub">${mode==="signup"?"Activá tu negocio con el código que te dieron":mode==="reset"?"Recuperar contraseña":mode==="completar"?"Casi listo":"Ingresá para ver tus ventas"}</div>
-    <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||FB.gerr||"")}</div></div>`;
+    <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||FB.gerr||"")}</div></div>
+    <div style="text-align:center;font-size:10px;color:var(--mut);margin-top:14px">v3</div>`;
   FB.gerr=null;
   FB.pend=mode==="completar";
   const msgEl=document.getElementById("au-msg");
