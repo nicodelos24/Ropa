@@ -166,6 +166,18 @@ nav button.on{color:var(--acc2)}
 }
 .toast.show{opacity:1}
 .danger{color:var(--c-red)!important}
+/* pantalla de cuenta */
+#auth{position:fixed;inset:0;z-index:80;background:var(--bg);overflow-y:auto;padding:24px 20px calc(30px + env(safe-area-inset-bottom))}
+#auth .alogo{font-size:34px;font-weight:900;text-align:center;margin-top:6vh}
+#auth .alogo span{color:var(--acc2)}
+#auth .asub{text-align:center;color:var(--mut);font-size:13px;margin-top:6px}
+#auth .abox{max-width:360px;margin:26px auto 0;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 18px}
+#auth label{display:block;font-size:12px;color:var(--mut);margin:14px 0 5px}
+#auth input{width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px 14px;font-size:16px}
+#auth .abig{width:100%;margin-top:18px;background:var(--acc2);border:none;color:#fff;border-radius:12px;padding:13px;font-size:15px;font-weight:700}
+#auth .aghost{width:100%;margin-top:9px;background:none;border:none;color:var(--acc2);font-size:13px;padding:8px}
+#auth .aerr{color:var(--c-red);font-size:13px;margin-top:10px;text-align:center;min-height:17px}
+#auth .aok{color:var(--c-green);font-size:13px;margin-top:10px;text-align:center;min-height:17px}
 /* inventario */
 .inv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .inv-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
@@ -265,7 +277,11 @@ nav button.on{color:var(--acc2)}
 
 <div class="sheet" id="sheet"><div class="sheet-in" id="sheet-in"></div></div>
 <div class="toast" id="toast"></div>
+<div id="auth" style="display:none"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 const ST = {
   paid:{l:"Pagado", c:"paid"},
@@ -391,7 +407,17 @@ const LOG_META={
 
 /* ================= RENDER ================= */
 function render(){
-  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.v===view));
+  if(!FB.uid||!FB.perfil){ renderAuthScreen(); return; }
+  const isOwner=FB.perfil.rol==="owner";
+  const noBiz=isOwner&&!FB.perfil.negocioId;
+  document.getElementById("auth").style.display="none";
+  document.querySelectorAll("#nav button").forEach(b=>{
+    const hide=(noBiz&&!["negocios","settings"].includes(b.dataset.v))||(b.dataset.v==="negocios"&&!isOwner)||(FB.perfil.rol==="user"&&b.dataset.v==="history");
+    b.style.display=hide?"none":"";
+    b.classList.toggle("on", b.dataset.v===view);
+  });
+  if(noBiz&&view!=="negocios"&&view!=="settings")view="negocios";
+  if(FB.perfil.rol==="user"&&view==="history")view="home";
   const paid=db.orders.filter(o=>o.estado==="paid");
   const pend=db.orders.filter(o=>o.estado!=="paid");
   const sum=a=>a.reduce((s,x)=>s+total(x),0);
@@ -413,8 +439,11 @@ function render(){
   document.getElementById("searchrow").style.display = ["orders","inventory","clients"].includes(view)?"flex":"none";
   document.getElementById("chips").style.display = view==="orders"?"flex":"none";
   document.getElementById("fab").style.display = ["orders","inventory","clients","agenda"].includes(view)?"block":"none";
+  document.getElementById("subtitle").textContent =
+    {negocios:"Panel del dueño de la app"}[view]||document.getElementById("subtitle").textContent;
 
   const main=document.getElementById("main");
+  if(view==="negocios")return renderNegocios(main);
   if(view==="home")return renderHome(main);
   if(view==="orders")return renderOrders(main);
   if(view==="inventory")return renderInventory(main);
@@ -912,7 +941,20 @@ function openOrder(id){
 
 /* ---------- Ajustes ---------- */
 function renderSettings(){
+  const isOwner=FB.perfil&&FB.perfil.rol==="owner";
   return `<div class="grab" style="margin-top:14px"></div><h2 style="font-size:22px;margin:8px 0 14px">Ajustes</h2>
+  ${(FB.perfil&&FB.perfil.negocioId)?`<div class="sett-card"><h3>👤 Mi cuenta</h3>
+    <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc(auth.currentUser.email||"")} · ${FB.perfil.rol==="admin"?"Administradora":FB.perfil.rol==="owner"?"Dueño de la app":"Vendedora"}</span></p>
+    <button class="ghost" id="cu-open" style="margin-top:10px">👥 Cuentas del negocio</button>
+    <button class="ghost" id="outBtn" style="margin-top:4px">🚪 Cerrar sesión</button>
+  </div>`:`<div class="sett-card"><h3>👤 Mi cuenta</h3>
+    <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc(auth.currentUser.email||"")} · Dueño de la app</span></p>
+    <button class="ghost" id="outBtn" style="margin-top:10px">🚪 Cerrar sesión</button>
+  </div>`}
+  ${isOwner?`<div class="sett-card"><h3>🏬 Mis negocios</h3>
+    <p>Creá negocios y códigos de activación para tus clientas.</p>
+    <button class="big" id="ng-open" style="margin-top:12px">Abrir panel de negocios</button>
+  </div>`:""}
   <div class="sett-card"><h3>🌗 Apariencia</h3>
     <p>Cambia entre modo oscuro y claro (también con el botón de arriba).</p>
     <button class="ghost" id="themeBtn2" style="margin-top:12px">Cambiar a modo ${((db.theme||"dark")==="dark")?"claro ☀️":"oscuro 🌙"}</button>
@@ -940,6 +982,11 @@ function renderSettings(){
 }
 function wireSettings(){
   document.getElementById("backBtn").onclick=()=>{ view="home"; render(); };
+  const cu=document.getElementById("cu-open");
+  if(cu)cu.onclick=()=>openCuentas();
+  const ng=document.getElementById("ng-open");
+  if(ng)ng.onclick=()=>{ view="negocios"; render(); };
+  document.getElementById("outBtn").onclick=()=>{ if(confirm("¿Cerrar sesión?"))logout(); };
   document.getElementById("prefijo-save").onclick=()=>{
     let v=document.getElementById("prefijo-in").value.trim();
     if(v&&!v.startsWith("+"))v="+"+v.replace(/\D/g,"");
@@ -1013,6 +1060,264 @@ document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
 });
 
 applyTheme();
+
+/* ================= Firebase ================= */
+const firebaseConfig={apiKey:"AIzaSyASz9-F603MdJ4wVQgIxnve0VMOdehkTvQ",authDomain:"ropa-e7ba3.firebaseapp.com",projectId:"ropa-e7ba3",storageBucket:"ropa-e7ba3.firebasestorage.app",messagingSenderId:"420186394511",appId:"1:420186394511:web:094c70ae8922354351c5fa"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),fsdb=firebase.firestore();
+fsdb.enablePersistence().catch(()=>{});
+const OWNER_CODE="ROPA-DUENO-2026";
+let FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null};
+function fbClean(d){ return JSON.parse(JSON.stringify(d,(k,v)=>v===undefined?null:v)); }
+function subscribe(){
+  if(FB.unsub){FB.unsub();FB.unsub=null;}
+  if(FB.unorg){FB.unorg();FB.unorg=null;}
+  const org=FB.perfil&&FB.perfil.negocioId;
+  if(org){
+    FB.unorg=fsdb.collection("negocios").doc(org).onSnapshot(s=>{
+      const n=s.exists?s.data():null;
+      if(n&&n.activo===false){
+        FB.perfil.activo=false;
+        renderAuthScreen("Este negocio está pausado. Habla con el administrador.");
+        auth.signOut();
+      }
+    });
+    FB.unsub=fsdb.collection("negocios").doc(org).collection("datos").doc("main").onSnapshot(s=>{
+      if(!s.exists){ if(FB.migrate&&FB.migrate.orders)db.orders=FB.migrate.orders; pushNow(); return; }
+      const d=s.data();
+      const keep={theme:db.theme,prefijo:db.prefijo};
+      db=Object.assign({orders:[],inventory:[],clients:[],events:[],users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"},d,keep);
+      db.usuarioId="me";
+      db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:auth.currentUser.email}];
+      save();
+      if(view!=="negocios")render();
+    });
+  }
+  if(FB.perfil){
+    db.usuarioId="me";
+    db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:auth.currentUser.email}];
+  }
+  if(FB.perfil&&FB.perfil.cambiarClave)openChangePass();
+  render();
+}
+function pushNow(){
+  if(!FB.perfil||!FB.perfil.negocioId)return;
+  fsdb.collection("negocios").doc(FB.perfil.negocioId).collection("datos").doc("main")
+    .set(fbClean({orders:db.orders,inventory:db.inventory,clients:db.clients,events:db.events,log:db.log,users:db.users,prefijo:db.prefijo,theme:db.theme}))
+    .catch(()=>{ toast("Sin conexión: se enviará al reconectar"); });
+}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(db));
+  clearTimeout(save._t);
+  save._t=setTimeout(pushNow,700);
+}
+auth.onAuthStateChanged(async u=>{
+  FB.uid=u?u.uid:null;
+  if(!u){ FB.perfil=null; if(FB.unsub){FB.unsub();FB.unsub=null;} if(FB.unorg){FB.unorg();FB.unorg=null;} render(); return; }
+  try{
+    const pd=await fsdb.collection("usuarios").doc(u.uid).get();
+    if(!pd.exists){ renderAuthScreen("Cuenta sin registro. Ingresá con tu código de activación."); await auth.signOut(); return; }
+    FB.perfil=pd.data();
+    const local=JSON.parse(localStorage.getItem(KEY)||"null");
+    if(local&&(local.orders||[]).length)FB.migrate=local;
+    subscribe();
+  }catch(e){ renderAuthScreen("No se pudo leer tu cuenta: "+e.message); }
+});
+/* ---------- pantalla de cuenta ---------- */
+function renderAuthScreen(msg,mode){
+  mode=mode||"login";
+  const a=document.getElementById("auth");
+  a.style.display="block";
+  document.getElementById("fab").style.display="none";
+  const f=mode==="login"?`
+      <label>Correo</label><input id="au-mail" type="email" placeholder="tucorreo@gmail.com">
+      <label>Contraseña</label><input id="au-pass" type="password" placeholder="••••••••">
+      <button class="abig" id="au-go">Ingresar</button>
+      <button class="aghost" id="au-reset">Olvidé mi contraseña</button>
+      <button class="aghost" id="au-sw2">Crear cuenta nueva ›</button>`
+    :mode==="signup"?`
+      <label>Tu nombre</label><input id="au-name" placeholder="Cómo te muestran en la app">
+      <label>Correo</label><input id="au-mail" type="email" placeholder="tucorreo@gmail.com">
+      <label>Contraseña (mínimo 6 caracteres)</label><input id="au-pass" type="password" placeholder="La que quieras usar">
+      <label>Código de activación</label><input id="au-code" placeholder="ROPA-XXXX" autocapitalize="characters">
+      <button class="abig" id="au-go">Crear mi cuenta</button>
+      <button class="aghost" id="au-sw1">‹ Ya tengo cuenta</button>`
+    :`
+      <p style="font-size:14px;color:var(--mut)">Escribí tu correo y te mandamos un enlace para crear una contraseña nueva.</p>
+      <label>Correo</label><input id="au-mail" type="email" placeholder="tucorreo@gmail.com">
+      <button class="abig" id="au-go">Enviar enlace</button>
+      <button class="aghost" id="au-sw1">‹ Volver</button>`;
+  a.innerHTML=`
+    <div class="alogo">Ropa<span>.</span></div>
+    <div class="asub">${mode==="signup"?"Activá tu negocio con el código que te dieron":mode==="reset"?"Recuperar contraseña":"Ingresá para ver tus ventas"}</div>
+    <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||"")}</div></div>`;
+  const msgEl=document.getElementById("au-msg");
+  const err=t=>{ msgEl.textContent=t; msgEl.className="aerr"; };
+  const okm=t=>{ msgEl.textContent=t; msgEl.className="aok"; };
+  const sw1=document.getElementById("au-sw1");
+  if(sw1)sw1.onclick=()=>renderAuthScreen("","login");
+  const sw2=document.getElementById("au-sw2");
+  if(sw2)sw2.onclick=()=>renderAuthScreen("","signup");
+  const g=document.getElementById("au-go");
+  if(mode==="reset"){
+    g.onclick=async()=>{
+      const m=document.getElementById("au-mail").value.trim();
+      if(!m)return err("Escribí tu correo");
+      try{ await auth.sendPasswordResetEmail(m); okm("Enlace enviado ✓ Revisá tu correo (y la carpeta de spam)."); }
+      catch(e){ err(e.code==="auth/user-not-found"?"No hay cuenta con ese correo":"No se pudo enviar: "+e.message); }
+    };
+    return;
+  }
+  const mail=document.getElementById("au-mail"),pass=document.getElementById("au-pass");
+  g.onclick=async()=>{
+    const m=mail.value.trim(),p=pass.value;
+    if(mode==="login"){
+      try{ await auth.signInWithEmailAndPassword(m,p); }
+      catch(e){ err(e.code==="auth/wrong-password"||e.code==="auth/invalid-credential"?"Contraseña incorrecta":e.code==="auth/user-not-found"?"No hay cuenta con ese correo":"No se pudo ingresar: "+e.message); }
+      return;
+    }
+    const name=document.getElementById("au-name").value.trim();
+    const code=document.getElementById("au-code").value.trim().toUpperCase();
+    if(!name)return err("Escribí tu nombre");
+    if(p.length<6)return err("La contraseña necesita al menos 6 caracteres");
+    try{
+      let rol,negocioId=null;
+      if(code===OWNER_CODE){
+        rol="owner";
+      }else{
+        const q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
+        if(q.empty)return err("Código no válido. Revisá con quien te lo pasó.");
+        const n=q.docs[0];
+        if(n.data().activo===false)return err("Este negocio está pausado.");
+        rol=n.data().usadoAdmin?"user":"admin";negocioId=n.id;
+      }
+      const cred=await auth.createUserWithEmailAndPassword(m,p);
+      await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId,nombre:name,email:m,rol,creado:Date.now()});
+      if(negocioId)fsdb.collection("negocios").doc(negocioId).update({usadoAdmin:true}).catch(()=>{});
+      localStorage.removeItem("ropa_sync_"+cred.user.uid);
+    }catch(e){
+      err(e.code==="auth/email-already-in-use"?"Ese correo ya tiene cuenta: usá Ingresar":e.code==="auth/weak-password"?"La contraseña necesita al menos 6 caracteres":"No se pudo crear: "+e.message);
+    }
+  };
+  const rst=document.getElementById("au-reset");
+  if(rst)rst.onclick=()=>renderAuthScreen("","reset");
+}
+function openChangePass(){
+  openSheet(`<div class="grab"></div><h2>Crea tu contraseña</h2>
+    <p style="font-size:14px;color:var(--mut)">Te dieron una contraseña provisional. Poné una nueva que solo vos sepas.</p>
+    <label style="display:block;font-size:12px;color:var(--mut);margin:12px 0 4px">Nueva contraseña</label><input id="cp1" type="password">
+    <label style="display:block;font-size:12px;color:var(--mut);margin:12px 0 4px">Repetila</label><input id="cp2" type="password">
+    <button class="big" id="cp-save" style="margin-top:14px">Guardar contraseña</button>`);
+  document.getElementById("cp-save").onclick=async()=>{
+    const p1=document.getElementById("cp1").value,p2=document.getElementById("cp2").value;
+    if(p1.length<6)return toast("Mínimo 6 caracteres");
+    if(p1!==p2)return toast("No coinciden");
+    try{
+      await auth.currentUser.updatePassword(p1);
+      await fsdb.collection("usuarios").doc(auth.currentUser.uid).update({cambiarClave:false});
+      FB.perfil.cambiarClave=false;
+      closeSheet(); toast("Contraseña guardada ✓");
+    }catch(e){ toast(e.code==="auth/requires-recent-login"?"Salí y volvé a ingresar, después cambiá la clave":"No se pudo cambiar: "+e.message); }
+  };
+}
+async function logout(){
+  await auth.signOut();
+  FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null};
+  view="home"; renderAuthScreen("Sesión cerrada.","login");
+}
+/* ---------- panel Negocios (solo dueño) ---------- */
+function renderNegocios(main){
+  main.innerHTML=`<div class="grab" style="margin-top:14px"></div><h2 style="font-size:22px;margin:8px 0 4px">Mis negocios</h2>
+  <p style="font-size:13px;color:var(--mut);margin-bottom:12px">Creá un negocio por clienta y pasale su código de activación.</p>
+  <div id="ng-list"><p style="color:var(--mut);font-size:13px">Cargando…</p></div>
+  <button class="addp" id="ng-new" style="margin:14px 0 8px">+ Crear negocio</button>`;
+  document.getElementById("ng-new").onclick=async()=>{
+    openSheet(`<div class="grab"></div><h2>Nuevo negocio</h2>
+      <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Nombre del negocio</label><input id="ng-name" placeholder="Ej. Ropa de Mamá">
+      <button class="big" id="ng-save" style="margin-top:14px">Crear y generar código</button>
+      <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+    document.getElementById("ng-save").onclick=async()=>{
+      const n=document.getElementById("ng-name").value.trim();
+      if(!n)return toast("Escribí el nombre");
+      const code="ROPA-"+Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
+      await fsdb.collection("negocios").add({nombre:n,codigo:code,activo:true,creado:Date.now(),por:FB.uid,usadoAdmin:false});
+      closeSheet(); toast("Negocio creado ✓");
+    };
+  };
+  fsdb.collection("negocios").orderBy("creado","desc").onSnapshot(async snap=>{
+    const box=document.getElementById("ng-list"); if(!box)return;
+    if(snap.empty){ box.innerHTML=`<div class="empty"><b>Sin negocios todavía</b>Creá el primero y compartí su código.</div>`; return; }
+    const rows=await Promise.all(snap.docs.map(async d=>{
+      const n=d.data();
+      const us=await fsdb.collection("usuarios").where("negocioId","==",d.id).get();
+      return `<div class="sett-card"><h3>${esc(n.nombre)} ${n.activo===false?'<span style="color:var(--c-red);font-size:12px">· PAUSADO</span>':""}</h3>
+        <p style="font-size:13px">Código: <b style="color:var(--acc2)">${esc(n.codigo)}</b> ${n.usadoAdmin?"· activado":"· sin activar"}</p>
+        <p style="font-size:12px;color:var(--mut)">${us.size} cuenta${us.size!==1?"s":""}${us.size?": "+us.docs.map(x=>esc(x.data().nombre)+" ("+(x.data().rol==="admin"?"admin":x.data().rol==="owner"?"dueño":"vendedora")+")").join(", "):""}</p>
+        <button class="ghost" id="ng-tg-${d.id}" style="margin-top:8px">${n.activo===false?"▶ Reactivar":"⏸ Pausar"}</button>
+        ${FB.perfil&&FB.perfil.negocioId===d.id?`<span style="font-size:12px;color:var(--c-green);margin-left:8px">· activo en este teléfono</span>`:`<button class="ghost" id="ng-ac-${d.id}" style="margin-left:8px">Activar aquí</button>`}</div>`;
+    }));
+    box.innerHTML=rows.join("");
+    snap.docs.forEach(d=>{
+      const b=document.getElementById("ng-tg-"+d.id),a=document.getElementById("ng-ac-"+d.id);
+      if(b)b.onclick=async()=>{
+        const n=d.data();
+        await fsdb.collection("negocios").doc(d.id).update({activo:n.activo===false});
+        toast(n.activo===false?"Reactivado ✓":"Pausado");
+      };
+      if(a)a.onclick=async()=>{
+        await fsdb.collection("usuarios").doc(FB.uid).update({negocioId:d.id});
+        FB.perfil.negocioId=d.id;
+        toast("Activado en este teléfono ✓");
+        subscribe();
+      };
+    });
+  });
+}
+/* ---------- panel Cuentas (admin) ---------- */
+function openCuentas(){
+  openSheet(`<div class="grab"></div><h2>Cuentas del negocio</h2>
+    <div id="cu-list" style="margin-top:10px"><p style="font-size:13px;color:var(--mut)">Cargando…</p></div>
+    <div style="margin-top:14px"><h3 style="font-size:15px">Agregar cuenta</h3>
+    <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Nombre</label><input id="cu-name" placeholder="Ej. Lucía">
+    <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Correo</label><input id="cu-mail" type="email" placeholder="correo@gmail.com">
+    <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Contraseña provisional</label><input id="cu-pass" type="text" placeholder="Ej. ropa1234 (la cambia al entrar)">
+    <button class="big" id="cu-add" style="margin-top:12px">Crear cuenta</button>
+    <p style="font-size:12px;color:var(--mut);margin-top:8px">Pasale el correo y la contraseña provisional a esa persona: entra, y la app le pide crear su propia contraseña.</p></div>
+    <button class="ghost" onclick="closeSheet()">Cerrar</button>`);
+  const org=FB.perfil.negocioId;
+  const rl=async()=>{
+    const box=document.getElementById("cu-list"); if(!box)return;
+    const q=await fsdb.collection("usuarios").where("negocioId","==",org).get();
+    box.innerHTML=q.docs.map(d=>`<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${d.data().rol==="admin"?"👑":"🧑‍🤝‍🧑"}</div>
+      <div style="flex:1;min-width:0"><h4 style="font-size:14px">${esc(d.data().nombre)}</h4><p>${esc(d.data().email||"")}</p></div>
+      ${d.id!==FB.uid?`<button class="ghost danger" id="cu-del-${d.id}" style="margin:0;padding:6px 10px">Quitar</button>`:`<span style="font-size:12px;color:var(--mut)">vos</span>`}</div>`).join("");
+    q.docs.forEach(d=>{
+      const b=document.getElementById("cu-del-"+d.id);
+      if(b)b.onclick=async()=>{
+        if(!confirm("¿Quitar la cuenta de "+d.data().nombre+"? Ya no podrá entrar."))return;
+        await fsdb.collection("usuarios").doc(d.id).delete();
+        toast("Cuenta quitada");
+      };
+    });
+  };
+  rl();
+  document.getElementById("cu-add").onclick=async()=>{
+    const name=document.getElementById("cu-name").value.trim();
+    const mail=document.getElementById("cu-mail").value.trim();
+    const pass=document.getElementById("cu-pass").value;
+    if(!name||!mail)return toast("Nombre y correo, por favor");
+    if(pass.length<6)return toast("Contraseña provisional: mínimo 6");
+    try{
+      const aux=firebase.apps.find(x=>x.name==="aux")||firebase.initializeApp(firebaseConfig,"aux");
+      const cred=await aux.auth().createUserWithEmailAndPassword(mail,pass);
+      await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId:org,nombre:name,email:mail,rol:"user",creado:Date.now(),cambiarClave:true});
+      await aux.auth().signOut();
+      toast("Cuenta creada ✓ Pasale los datos");
+      document.getElementById("cu-name").value="";document.getElementById("cu-mail").value="";document.getElementById("cu-pass").value="";
+      rl();
+    }catch(e){ toast(e.code==="auth/email-already-in-use"?"Ese correo ya tiene cuenta":"No se pudo: "+e.message); }
+  };
+}
 render();
 
 /* ---------- botón atrás del móvil ---------- */
