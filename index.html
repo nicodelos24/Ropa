@@ -1066,7 +1066,6 @@ const firebaseConfig={apiKey:"AIzaSyASz9-F603MdJ4wVQgIxnve0VMOdehkTvQ",authDomai
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),fsdb=firebase.firestore();
 fsdb.enablePersistence().catch(()=>{});
-const OWNER_CODE="ROPA-DUENO-2026";
 let FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null};
 function fbClean(d){ return JSON.parse(JSON.stringify(d,(k,v)=>v===undefined?null:v)); }
 function subscribe(){
@@ -1118,6 +1117,7 @@ auth.onAuthStateChanged(async u=>{
     const pd=await fsdb.collection("usuarios").doc(u.uid).get();
     if(!pd.exists){ renderAuthScreen("Cuenta sin registro. Ingresá con tu código de activación."); await auth.signOut(); return; }
     FB.perfil=pd.data();
+    if(FB.perfil.rol==="owner")fsdb.collection("config").doc("boot").update({ownerTaken:true}).catch(()=>{});
     const local=JSON.parse(localStorage.getItem(KEY)||"null");
     if(local&&(local.orders||[]).length)FB.migrate=local;
     subscribe();
@@ -1182,15 +1182,25 @@ function renderAuthScreen(msg,mode){
     if(p.length<6)return err("La contraseña necesita al menos 6 caracteres");
     try{
       let rol,negocioId=null;
-      if(code===OWNER_CODE){
-        rol="owner";
-      }else{
-        const q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
-        if(q.empty)return err("Código no válido. Revisá con quien te lo pasó.");
-        const n=q.docs[0];
-        if(n.data().activo===false)return err("Este negocio está pausado.");
-        rol=n.data().usadoAdmin?"user":"admin";negocioId=n.id;
+      const q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
+      if(q.empty){
+        const clave=code;
+        try{
+          const cred=await auth.createUserWithEmailAndPassword(m,p);
+          await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId:null,nombre:name,email:m,rol:"owner",creado:Date.now(),clave});
+          await fsdb.collection("usuarios").doc(cred.user.uid).update({clave:firebase.firestore.FieldValue.delete()});
+          localStorage.removeItem("ropa_sync_"+cred.user.uid);
+          return;
+        }catch(e2){
+          if(e2.code==="auth/email-already-in-use")return err("Ese correo ya tiene cuenta: usá Ingresar");
+          if(e2.code==="auth/weak-password")return err("La contraseña necesita al menos 6 caracteres");
+          if((e2.code||"").includes("permission"))return err("Código no válido. Revisá con quien te lo pasó.");
+          return err("No se pudo crear: "+e2.message);
+        }
       }
+      const n=q.docs[0];
+      if(n.data().activo===false)return err("Este negocio está pausado.");
+      rol=n.data().usadoAdmin?"user":"admin";negocioId=n.id;
       const cred=await auth.createUserWithEmailAndPassword(m,p);
       await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId,nombre:name,email:m,rol,creado:Date.now()});
       if(negocioId)fsdb.collection("negocios").doc(negocioId).update({usadoAdmin:true}).catch(()=>{});
