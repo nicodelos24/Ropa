@@ -1112,6 +1112,7 @@ function save(){
   clearTimeout(save._t);
   save._t=setTimeout(pushNow,700);
 }
+auth.getRedirectResult().catch(e=>{ FB.gerr=(e.code||"")+" "+e.message; });
 auth.onAuthStateChanged(async u=>{
   FB.uid=u?u.uid:null;
   if(!u){ FB.perfil=null;FB.pend=false;FB.pendName=null; if(FB.unsub){FB.unsub();FB.unsub=null;} if(FB.unorg){FB.unorg();FB.unorg=null;} render(); return; }
@@ -1172,7 +1173,8 @@ function renderAuthScreen(msg,mode){
   a.innerHTML=`
     <div class="alogo">Ropa<span>.</span></div>
     <div class="asub">${mode==="signup"?"Activá tu negocio con el código que te dieron":mode==="reset"?"Recuperar contraseña":mode==="completar"?"Casi listo":"Ingresá para ver tus ventas"}</div>
-    <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||"")}</div></div>`;
+    <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||FB.gerr||"")}</div></div>`;
+  FB.gerr=null;
   FB.pend=mode==="completar";
   const msgEl=document.getElementById("au-msg");
   const err=t=>{ msgEl.textContent=t; msgEl.className="aerr"; };
@@ -1188,10 +1190,9 @@ function renderAuthScreen(msg,mode){
     try{
       await auth.signInWithPopup(p);
     }catch(e){
-      const soft=["auth/popup-blocked","auth/cancelled-popup-request","auth/popup-closed-by-user","auth/operation-not-supported-in-this-environment","auth/web-storage-unsupported","auth/unauthorized-domain"].includes(e.code);
-      if(!soft){ err("No se pudo abrir Google: "+e.message); return; }
+      if(e.code==="auth/popup-closed-by-user")return err("Cerraste la ventana de Google. Probá de nuevo.");
       try{ await auth.signInWithRedirect(p); }
-      catch(e2){ err("No se pudo abrir Google: "+e2.message); }
+      catch(e2){ err("GOOGLE: "+(e.code||"")+" / "+(e2.code||e2.message||e.message)); }
     }
   };
   if(mode==="completar"){
