@@ -484,7 +484,7 @@ function renderHome(main){
   const upcoming=[];
   const allD=[...new Set(db.orders.filter(o=>o.fecha).map(o=>o.fecha))].filter(d=>d>=dstr(today)).sort();
   allD.slice(0,5).forEach(ds=>{
-    db.orders.filter(o=>o.fecha===ds).forEach(o=>upcoming.push({ds,tipo:"o",id:o.id,titulo:esc(o.cliente),sub:(o.items||[{}])[0].name||"Pedido",monto:fmt(total(o))}));
+    db.orders.filter(o=>o.fecha===ds).forEach(o=>upcoming.push({ds,tipo:"o",id:o.id,titulo:esc(o.cliente),sub:esc((o.items||[{}])[0].name||"Pedido"),monto:fmt(total(o))}));
   });
   main.innerHTML=`
     <div class="hi">Hola 👋</div>
@@ -518,7 +518,7 @@ function renderHome(main){
 /* ---------- Pedidos ---------- */
 function itemThumb(i){
   const inv=db.inventory.find(x=>x.name===i.name);
-  if(inv&&inv.photo)return`<span class="st"><img src="${inv.photo}"></span>`;
+  if(inv&&inv.photo)return`<span class="st"><img src="${esc(inv.photo)}"></span>`;
   return`<span class="st">${inv?(CAT_ICON[inv.cat]||"🛍️"):"🛍️"}</span>`;
 }
 function orderStackHTML(o){
@@ -545,7 +545,7 @@ function renderOrders(main){
     const paidC=Number(o.cuotasPagadas)||0, cuotas=Number(o.cuotas)||2;
     const chips=[
       `<span class="b ${st.c}">${st.l}</span>`,
-      (o.estado==="due"&&cuotas)?`<span class="b msg">Cuota ${Math.min(paidC+1,cuotas)} de ${cuotas}</span>`:""
+      (o.estado==="due"&&cuotas)?`<span class="b msg">Pagó ${paidC} de ${cuotas}</span>`:""
     ].join("");
     const cuo=o.estado==="due"?`<div class="cuotas">${Array.from({length:cuotas},(_,i)=>`<div class="cq ${i<paidC?"on":""}"></div>`).join("")}</div>`:"";
     return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
@@ -564,7 +564,7 @@ function renderInventory(main){
   if(!list.length){ main.innerHTML=`<div class="empty"><b>Inventario vacío</b>Agrega tus productos con nombre, precio y foto.<br>Luego podrás elegirlos al crear un pedido.</div>`; return; }
   main.innerHTML=`<div class="inv">`+list.map(i=>`
     <div class="inv-card">
-      ${i.photo?`<img class="inv-photo" src="${i.photo}">`:`<div class="inv-ph">${CAT_ICON[i.cat]||"👗"}</div>`}
+      ${i.photo?`<img class="inv-photo" src="${esc(i.photo)}">`:`<div class="inv-ph">${CAT_ICON[i.cat]||"👗"}</div>`}
       <div class="inv-body"><h4>${esc(i.name)}</h4><p>${fmt(i.price)}${i.cat?` · ${esc((CATS.find(c=>c[0]===i.cat)||["","",""])[2]||"")}`:""}</p></div>
       <div class="inv-actions">
         <button data-act="edit" data-id="${i.id}">Editar</button>
@@ -584,7 +584,7 @@ function openInvEditor(it){
   const isNew=!it; it=it||{id:uid("i"),name:"",price:"",photo:null,cat:"vestido"};
   let cat=it.cat||"vestido";
   openSheet(`<div class="grab"></div><h2>${isNew?"Nuevo producto":"Editar producto"}</h2>
-    ${it.photo?`<img class="inv-photo" src="${it.photo}" style="border-radius:14px;margin-top:12px">`:""}
+    ${it.photo?`<img class="inv-photo" src="${esc(it.photo)}" style="border-radius:14px;margin-top:12px">`:""}
     <input type="file" id="inv-photo" accept="image/*" style="display:none">
     <input type="file" id="inv-cam" accept="image/*" capture="environment" style="display:none">
     <div style="display:flex;gap:8px;margin-top:12px">
@@ -769,7 +769,7 @@ function openEditor(orig, presetClient, presetDate){
     if(!items.length)return`<p style="font-size:13px;color:var(--mut)">Tu inventario está vacío. Agrega productos en la pestaña Inventario.</p>`;
     return `<div class="invpick">`+items.map(i=>`
       <button data-iid="${i.id}" class="${sel.includes(i.id)?"on":""}">
-        ${i.photo?`<img class="thumb" src="${i.photo}">`:`<div class="thumb">${CAT_ICON[i.cat]||"👗"}</div>`}
+        ${i.photo?`<img class="thumb" src="${esc(i.photo)}">`:`<div class="thumb">${CAT_ICON[i.cat]||"👗"}</div>`}
         <h5>${esc(i.name)}</h5><p>${fmt(i.price)}</p></button>`).join("")+`</div>`;
   };
   const base=orig||{cliente:c0?c0.name:"",tel:c0?c0.tel:"",clienteId:c0?c0.id:null,estado:"new",vendedor:"Yo",
@@ -945,11 +945,11 @@ function renderSettings(){
   const isOwner=FB.perfil&&FB.perfil.rol==="owner";
   return `<div class="grab" style="margin-top:14px"></div><h2 style="font-size:22px;margin:8px 0 14px">Ajustes</h2>
   ${(FB.perfil&&FB.perfil.negocioId)?`<div class="sett-card"><h3>👤 Mi cuenta</h3>
-    <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc(auth.currentUser.email||"")} · ${FB.perfil.rol==="admin"?"Administradora":FB.perfil.rol==="owner"?"Dueño de la app":"Vendedora"}</span></p>
+    <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc((auth.currentUser&&auth.currentUser.email)||"")} · ${FB.perfil.rol==="admin"?"Administradora":FB.perfil.rol==="owner"?"Dueño de la app":"Vendedora"}</span></p>
     <button class="ghost" id="cu-open" style="margin-top:10px">👥 Cuentas del negocio</button>
     <button class="ghost" id="outBtn" style="margin-top:4px">🚪 Cerrar sesión</button>
   </div>`:`<div class="sett-card"><h3>👤 Mi cuenta</h3>
-    <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc(auth.currentUser.email||"")} · Dueño de la app</span></p>
+    <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc((auth.currentUser&&auth.currentUser.email)||"")} · Dueño de la app</span></p>
     <button class="ghost" id="outBtn" style="margin-top:10px">🚪 Cerrar sesión</button>
   </div>`}
   ${isOwner?`<div class="sett-card"><h3>🏬 Mis negocios</h3>
@@ -1090,14 +1090,14 @@ function subscribe(){
       const keep={theme:db.theme,prefijo:db.prefijo};
       db=Object.assign({orders:[],inventory:[],clients:[],events:[],users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"},d,keep);
       db.usuarioId="me";
-      db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:auth.currentUser.email}];
+      db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:(auth.currentUser&&auth.currentUser.email)||""}];
       save();
       if(view!=="negocios")render();
     });
   }
   if(FB.perfil){
     db.usuarioId="me";
-    db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:auth.currentUser.email}];
+    db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:(auth.currentUser&&auth.currentUser.email)||""}];
   }
   if(FB.perfil&&FB.perfil.cambiarClave)openChangePass();
   render();
@@ -1136,20 +1136,15 @@ auth.onAuthStateChanged(async u=>{
   }catch(e){ renderAuthScreen("No se pudo leer tu cuenta: "+e.message); }
 });
 async function resolveActivation(code){
-  let q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
-  if(!q.empty){
-    const n=q.docs[0];
-    if(n.data().activo===false)throw new Error("Este negocio está pausado.");
-    return{rol:n.data().usadoAdmin?"user":"admin",negocioId:n.id};
-  }
-  q=await fsdb.collection("invites").where("codigo","==",code).limit(1).get();
-  if(!q.empty){
-    const it=q.docs[0];
-    if(it.data().usado)throw new Error("Esta invitación ya fue usada.");
-    const n=await fsdb.collection("negocios").doc(it.data().negocioId).get();
-    if(!n.exists||n.data().activo===false)throw new Error("Este negocio está pausado.");
-    return{rol:"user",negocioId:it.data().negocioId,inviteId:it.id};
-  }
+  try{
+    const c=await fsdb.collection("codigos").doc(code).get();
+    if(c.exists){
+      if(c.data().usado)throw new Error("Este código ya fue usado.");
+      const n=await fsdb.collection("negocios").doc(c.data().negocioId).get();
+      if(!n.exists||n.data().activo===false)throw new Error("Este negocio está pausado.");
+      return{rol:c.data().tipo,negocioId:c.data().negocioId,claim:code};
+    }
+  }catch(e){ if(e&&e.message&&/usado|pausado/.test(e.message))throw e; }
   return{rol:"owner",negocioId:null};
 }
 /* ---------- pantalla de cuenta ---------- */
@@ -1218,15 +1213,15 @@ function renderAuthScreen(msg,mode){
       if(!code)return err("Escribí tu código");
       try{
         const act=await resolveActivation(code);
-        const data={negocioId:act.negocioId,nombre:name,email:(auth.currentUser.email||""),rol:act.rol,creado:Date.now()};
+        const data={negocioId:act.negocioId,nombre:name,email:((auth.currentUser&&auth.currentUser.email)||""),rol:act.rol,creado:Date.now()};
         if(act.rol==="owner")data.clave=code;
+        else data.claim=code;
         await fsdb.collection("usuarios").doc(auth.currentUser.uid).set(data);
         if(act.rol==="owner"){
           await fsdb.collection("usuarios").doc(auth.currentUser.uid).update({clave:firebase.firestore.FieldValue.delete()});
           fsdb.collection("config").doc("boot").update({ownerTaken:true}).catch(()=>{});
         }else{
-          if(act.inviteId)fsdb.collection("invites").doc(act.inviteId).update({usado:true}).catch(()=>{});
-          fsdb.collection("negocios").doc(act.negocioId).update({usadoAdmin:true}).catch(()=>{});
+          fsdb.collection("codigos").doc(act.claim).update({usado:true}).catch(()=>{});
         }
         FB.pend=false;FB.pendName=null;
         localStorage.removeItem("ropa_sync_"+auth.currentUser.uid);
@@ -1309,8 +1304,9 @@ function renderNegocios(main){
     document.getElementById("ng-save").onclick=async()=>{
       const n=document.getElementById("ng-name").value.trim();
       if(!n)return toast("Escribí el nombre");
-      const code="ROPA-"+Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
-      await fsdb.collection("negocios").add({nombre:n,codigo:code,activo:true,creado:Date.now(),por:FB.uid,usadoAdmin:false});
+      const code="ROPA-"+Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
+      const ref=await fsdb.collection("negocios").add({nombre:n,codigo:code,activo:true,creado:Date.now(),por:FB.uid});
+      await fsdb.collection("codigos").doc(code).set({tipo:"admin",negocioId:ref.id,usado:false,creado:Date.now()});
       closeSheet(); toast("Negocio creado ✓");
     };
   };
@@ -1321,7 +1317,7 @@ function renderNegocios(main){
       const n=d.data();
       const us=await fsdb.collection("usuarios").where("negocioId","==",d.id).get();
       return `<div class="sett-card"><h3>${esc(n.nombre)} ${n.activo===false?'<span style="color:var(--c-red);font-size:12px">· PAUSADO</span>':""}</h3>
-        <p style="font-size:13px">Código: <b style="color:var(--acc2)">${esc(n.codigo)}</b> ${n.usadoAdmin?"· activado":"· sin activar"}</p>
+        <p style="font-size:13px">Código: <b style="color:var(--acc2)">${esc(n.codigo)}</b></p>
         <p style="font-size:12px;color:var(--mut)">${us.size} cuenta${us.size!==1?"s":""}${us.size?": "+us.docs.map(x=>esc(x.data().nombre)+" ("+(x.data().rol==="admin"?"admin":x.data().rol==="owner"?"dueño":"vendedora")+")").join(", "):""}</p>
         <button class="ghost" id="ng-tg-${d.id}" style="margin-top:8px">${n.activo===false?"▶ Reactivar":"⏸ Pausar"}</button>
         ${FB.perfil&&FB.perfil.negocioId===d.id?`<span style="font-size:12px;color:var(--c-green);margin-left:8px">· activo en este teléfono</span>`:""}</div>`;
@@ -1349,14 +1345,14 @@ function openCuentas(){
     const box=document.getElementById("cu-list"); if(!box)return;
     const [q,iv]=await Promise.all([
       fsdb.collection("usuarios").where("negocioId","==",org).get(),
-      fsdb.collection("invites").where("negocioId","==",org).get()
+      fsdb.collection("codigos").where("negocioId","==",org).where("usado","==",false).get()
     ]);
-    const pend=iv.docs.filter(d=>d.data().usado!==true);
+    const pend=iv.docs.map(d=>({id:d.id,...d.data()}));
     box.innerHTML=q.docs.map(d=>`<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${d.data().rol==="admin"?"👑":"🧑‍🤝‍🧑"}</div>
       <div style="flex:1;min-width:0"><h4 style="font-size:14px">${esc(d.data().nombre)}</h4><p>${esc(d.data().email||"")}</p></div>
       ${d.id!==FB.uid?`<button class="ghost danger" id="cu-del-${d.id}" style="margin:0;padding:6px 10px">Quitar</button>`:`<span style="font-size:12px;color:var(--mut)">vos</span>`}</div>`).join("")
       +(pend.length?`<p style="font-size:12px;color:var(--mut);margin-top:10px">Invitaciones sin usar:</p>`+pend.map(d=>`<div class="ev"><div style="font-size:16px;width:26px;text-align:center">✉️</div>
-        <div style="flex:1;min-width:0"><h4 style="font-size:14px;color:var(--acc2)">${esc(d.data().codigo)}</h4><p>sin usar</p></div>
+        <div style="flex:1;min-width:0"><h4 style="font-size:14px;color:var(--acc2)">${esc(d.id)}</h4><p>sin usar</p></div>
         <button class="ghost" id="cu-wa-${d.id}" style="margin:0;padding:6px 10px">WhatsApp</button><button class="ghost danger" id="cu-iv-${d.id}" style="margin:0;padding:6px 10px">✕</button></div>`).join(""):"");
     q.docs.forEach(d=>{
       const b=document.getElementById("cu-del-"+d.id);
@@ -1368,15 +1364,15 @@ function openCuentas(){
     });
     pend.forEach(d=>{
       const w=document.getElementById("cu-wa-"+d.id),x=document.getElementById("cu-iv-"+d.id);
-      const msg="¡Hola! 👋 Te invito a usar Ropa, la app de ventas.\n\nEntrá acá: https://nicodelos24.github.io/Ropa/\nTocá «Crear cuenta nueva», poné tu nombre, tu correo y la contraseña que quieras.\n\nTu código de invitación: "+d.data().codigo;
+      const msg="¡Hola! 👋 Te invito a usar Ropa, la app de ventas.\n\nEntrá acá: https://nicodelos24.github.io/Ropa/\nTocá «Crear cuenta nueva», poné tu nombre, tu correo y la contraseña que quieras.\n\nTu código de invitación: "+d.id;
       if(w)w.onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
-      if(x)x.onclick=async()=>{ await fsdb.collection("invites").doc(d.id).delete(); rl(); };
+      if(x)x.onclick=async()=>{ await fsdb.collection("codigos").doc(d.id).delete(); rl(); };
     });
   };
   rl();
   document.getElementById("cu-inv").onclick=async()=>{
-    const code="INV-"+Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
-    await fsdb.collection("invites").add({negocioId:org,codigo:code,usado:false,creado:Date.now(),por:FB.uid});
+    const code="INV-"+Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
+    await fsdb.collection("codigos").doc(code).set({tipo:"user",negocioId:org,usado:false,creado:Date.now(),por:FB.uid});
     toast("Invitación creada ✓");
     rl();
   };
