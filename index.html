@@ -1258,7 +1258,6 @@ function renderAuthScreen(msg,mode){
       return;
     }
     const name=document.getElementById("au-name").value.trim();
-    const code=document.getElementById("au-code").value.trim().toUpperCase();
     if(!name)return err("Escribí tu nombre");
     if(p.length<6)return err("La contraseña necesita al menos 6 caracteres");
     FB.pendName=name;
