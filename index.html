@@ -1136,11 +1136,21 @@ auth.onAuthStateChanged(async u=>{
   }catch(e){ renderAuthScreen("No se pudo leer tu cuenta: "+e.message); }
 });
 async function resolveActivation(code){
-  const q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
-  if(q.empty)return{rol:"owner",negocioId:null};
-  const n=q.docs[0];
-  if(n.data().activo===false)throw new Error("Este negocio está pausado.");
-  return{rol:n.data().usadoAdmin?"user":"admin",negocioId:n.id};
+  let q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
+  if(!q.empty){
+    const n=q.docs[0];
+    if(n.data().activo===false)throw new Error("Este negocio está pausado.");
+    return{rol:n.data().usadoAdmin?"user":"admin",negocioId:n.id};
+  }
+  q=await fsdb.collection("invites").where("codigo","==",code).limit(1).get();
+  if(!q.empty){
+    const it=q.docs[0];
+    if(it.data().usado)throw new Error("Esta invitación ya fue usada.");
+    const n=await fsdb.collection("negocios").doc(it.data().negocioId).get();
+    if(!n.exists||n.data().activo===false)throw new Error("Este negocio está pausado.");
+    return{rol:"user",negocioId:it.data().negocioId,inviteId:it.id};
+  }
+  return{rol:"owner",negocioId:null};
 }
 /* ---------- pantalla de cuenta ---------- */
 function renderAuthScreen(msg,mode){
@@ -1217,6 +1227,7 @@ function renderAuthScreen(msg,mode){
           await fsdb.collection("usuarios").doc(auth.currentUser.uid).update({clave:firebase.firestore.FieldValue.delete()});
           fsdb.collection("config").doc("boot").update({ownerTaken:true}).catch(()=>{});
         }else{
+          if(act.inviteId)fsdb.collection("invites").doc(act.inviteId).update({usado:true}).catch(()=>{});
           fsdb.collection("negocios").doc(act.negocioId).update({usadoAdmin:true}).catch(()=>{});
         }
         FB.pend=false;FB.pendName=null;
@@ -1335,20 +1346,23 @@ function renderNegocios(main){
 function openCuentas(){
   openSheet(`<div class="grab"></div><h2>Cuentas del negocio</h2>
     <div id="cu-list" style="margin-top:10px"><p style="font-size:13px;color:var(--mut)">Cargando…</p></div>
-    <div style="margin-top:14px"><h3 style="font-size:15px">Agregar cuenta</h3>
-    <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Nombre</label><input id="cu-name" placeholder="Ej. Lucía">
-    <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Correo</label><input id="cu-mail" type="email" placeholder="correo@gmail.com">
-    <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Contraseña provisional</label><input id="cu-pass" type="text" placeholder="Ej. ropa1234 (la cambia al entrar)">
-    <button class="big" id="cu-add" style="margin-top:12px">Crear cuenta</button>
-    <p style="font-size:12px;color:var(--mut);margin-top:8px">Pasale el correo y la contraseña provisional a esa persona: entra, y la app le pide crear su propia contraseña.</p></div>
+    <button class="big" id="cu-inv" style="margin-top:14px">➕ Invitar a alguien por WhatsApp</button>
+    <p style="font-size:12px;color:var(--mut);margin-top:8px">Se genera un código de invitación de un solo uso. Quien lo reciba crea su cuenta con su propio correo y contraseña.</p>
     <button class="ghost" onclick="closeSheet()">Cerrar</button>`);
   const org=FB.perfil.negocioId;
   const rl=async()=>{
     const box=document.getElementById("cu-list"); if(!box)return;
-    const q=await fsdb.collection("usuarios").where("negocioId","==",org).get();
+    const [q,iv]=await Promise.all([
+      fsdb.collection("usuarios").where("negocioId","==",org).get(),
+      fsdb.collection("invites").where("negocioId","==",org).get()
+    ]);
+    const pend=iv.docs.filter(d=>d.data().usado!==true);
     box.innerHTML=q.docs.map(d=>`<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${d.data().rol==="admin"?"👑":"🧑‍🤝‍🧑"}</div>
       <div style="flex:1;min-width:0"><h4 style="font-size:14px">${esc(d.data().nombre)}</h4><p>${esc(d.data().email||"")}</p></div>
-      ${d.id!==FB.uid?`<button class="ghost danger" id="cu-del-${d.id}" style="margin:0;padding:6px 10px">Quitar</button>`:`<span style="font-size:12px;color:var(--mut)">vos</span>`}</div>`).join("");
+      ${d.id!==FB.uid?`<button class="ghost danger" id="cu-del-${d.id}" style="margin:0;padding:6px 10px">Quitar</button>`:`<span style="font-size:12px;color:var(--mut)">vos</span>`}</div>`).join("")
+      +(pend.length?`<p style="font-size:12px;color:var(--mut);margin-top:10px">Invitaciones sin usar:</p>`+pend.map(d=>`<div class="ev"><div style="font-size:16px;width:26px;text-align:center">✉️</div>
+        <div style="flex:1;min-width:0"><h4 style="font-size:14px;color:var(--acc2)">${esc(d.data().codigo)}</h4><p>sin usar</p></div>
+        <button class="ghost" id="cu-wa-${d.id}" style="margin:0;padding:6px 10px">WhatsApp</button><button class="ghost danger" id="cu-iv-${d.id}" style="margin:0;padding:6px 10px">✕</button></div>`).join(""):"");
     q.docs.forEach(d=>{
       const b=document.getElementById("cu-del-"+d.id);
       if(b)b.onclick=async()=>{
@@ -1357,23 +1371,19 @@ function openCuentas(){
         toast("Cuenta quitada");
       };
     });
+    pend.forEach(d=>{
+      const w=document.getElementById("cu-wa-"+d.id),x=document.getElementById("cu-iv-"+d.id);
+      const msg="¡Hola! 👋 Te invito a usar Ropa, la app de ventas.\n\nEntrá acá: https://nicodelos24.github.io/Ropa/\nTocá «Crear cuenta nueva», poné tu nombre, tu correo y la contraseña que quieras.\n\nTu código de invitación: "+d.data().codigo;
+      if(w)w.onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+      if(x)x.onclick=async()=>{ await fsdb.collection("invites").doc(d.id).delete(); rl(); };
+    });
   };
   rl();
-  document.getElementById("cu-add").onclick=async()=>{
-    const name=document.getElementById("cu-name").value.trim();
-    const mail=document.getElementById("cu-mail").value.trim();
-    const pass=document.getElementById("cu-pass").value;
-    if(!name||!mail)return toast("Nombre y correo, por favor");
-    if(pass.length<6)return toast("Contraseña provisional: mínimo 6");
-    try{
-      const aux=firebase.apps.find(x=>x.name==="aux")||firebase.initializeApp(firebaseConfig,"aux");
-      const cred=await aux.auth().createUserWithEmailAndPassword(mail,pass);
-      await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId:org,nombre:name,email:mail,rol:"user",creado:Date.now(),cambiarClave:true});
-      await aux.auth().signOut();
-      toast("Cuenta creada ✓ Pasale los datos");
-      document.getElementById("cu-name").value="";document.getElementById("cu-mail").value="";document.getElementById("cu-pass").value="";
-      rl();
-    }catch(e){ toast(e.code==="auth/email-already-in-use"?"Ese correo ya tiene cuenta":"No se pudo: "+e.message); }
+  document.getElementById("cu-inv").onclick=async()=>{
+    const code="INV-"+Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
+    await fsdb.collection("invites").add({negocioId:org,codigo:code,usado:false,creado:Date.now(),por:FB.uid});
+    toast("Invitación creada ✓");
+    rl();
   };
 }
 render();
