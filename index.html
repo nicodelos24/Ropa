@@ -1302,7 +1302,7 @@ function renderNegocios(main){
   <button class="addp" id="ng-new" style="margin:14px 0 8px">+ Crear negocio</button>`;
   document.getElementById("ng-new").onclick=async()=>{
     openSheet(`<div class="grab"></div><h2>Nuevo negocio</h2>
-      <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Nombre del negocio</label><input id="ng-name" placeholder="Ej. Ropa de Mamá">
+      <label style="display:block;font-size:12px;color:var(--mut);margin:10px 0 4px">Nombre del negocio</label><input id="ng-name" placeholder="Nombre del negocio">
       <button class="big" id="ng-save" style="margin-top:14px">Crear y generar código</button>
       <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
     document.getElementById("ng-save").onclick=async()=>{
