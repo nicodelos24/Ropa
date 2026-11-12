@@ -1068,6 +1068,7 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),fsdb=firebase.firestore();
 fsdb.settings({experimentalForceLongPolling:true});
 fsdb.enablePersistence().catch(()=>{});
+const GOOGLE_ON=false;
 let FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null,pend:false,pendName:null};
 function fbClean(d){ return JSON.parse(JSON.stringify(d,(k,v)=>v===undefined?null:v)); }
 function subscribe(){
@@ -1199,6 +1200,7 @@ function renderAuthScreen(msg,mode){
       catch(e2){ err("GOOGLE: "+(e.code||"")+" / "+(e2.code||e2.message||e.message)); }
     }
   };
+  if(!GOOGLE_ON&&gg){ gg.style.display="none"; }
   if(mode==="completar"){
     document.getElementById("au-out").onclick=()=>logout();
     g.onclick=async()=>{
