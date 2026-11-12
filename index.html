@@ -284,7 +284,7 @@ const DEFAULT_USERS=[
   {id:"u2",name:"Socia",rol:"Socia",email:""}
 ];
 let db = load();
-let view="home", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null, logFilter="all";
+let view="home", filter="all", query="", calMonth=new Date().getMonth(), calYear=new Date().getFullYear(), selDate=null, logFilter="all", showFuture=false;
 
 function load(){
   try{
@@ -364,10 +364,10 @@ function upsertClient(o){
 }
 
 /* ---------- auditoría ---------- */
-function userName(uid_){ const u=(db.users||[]).find(x=>x.id===uid_); return u?u.name:"—"; }
+function userName(uid_){ const u=(db.users||[]).find(x=>x.id===uid_); return u?u.name:"Cuenta"; }
 function log(action, detail){
   db.log=db.log||[];
-  db.log.push({id:uid("l"),ts:Date.now(),user:db.usuarioId||"u1",action,detail:detail||""});
+  db.log.push({id:uid("l"),ts:Date.now(),user:db.usuarioId||"u1",who:userName(db.usuarioId||"u1"),action,detail:detail||""});
   if(db.log.length>600)db.log=db.log.slice(-600);
 }
 const LOG_META={
@@ -426,10 +426,11 @@ function render(){
 
 /* ---------- Historial ---------- */
 function renderHistory(main){
-  const chips=[["all","Todos"],["u1",userName("u1")],["u2",userName("u2")]];
-  const list=(db.log||[]).filter(e=>logFilter==="all"||e.user===logFilter).slice().reverse();
+  const authors=[...new Set((db.log||[]).map(e=>e.who||userName(e.user)))];
+  const chips=[["all","Todos"],...authors.map(a=>[a,a])];
+  const list=(db.log||[]).filter(e=>logFilter==="all"||(e.who||userName(e.user))===logFilter).slice().reverse();
   main.innerHTML=`
-    <div class="chips" style="margin:2px 0 12px">${chips.map(([k,l],i)=>`<button class="chip c-neutral ${logFilter===k?"on":""}" data-k="${k}">${l}</button>`).join("")}</div>
+    <div class="chips" style="margin:2px 0 12px">${chips.map(([k,l])=>`<button class="chip c-neutral ${logFilter===k?"on":""}" data-k="${esc(k)}">${esc(l)}</button>`).join("")}</div>
     ${list.length?list.map(e=>{
       const m=LOG_META[e.action]||{ic:"•",l:e.action};
       const d=new Date(e.ts);
@@ -437,8 +438,8 @@ function renderHistory(main){
       const dtxt=(d.getDate()===new Date().getDate())?"Hoy":d.getDate()+" "+MESES[d.getMonth()].slice(0,3);
       return `<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${m.ic}</div>
         <div style="flex:1;min-width:0"><h4 style="font-size:14px">${m.l}</h4><p>${esc(e.detail)}</p></div>
-        <div class="ev-date">${dtxt}<br>${hh} · <b style="color:var(--acc2)">${esc(userName(e.user))}</b></div></div>`;
-    }).join(""):`<div class="empty"><b>Sin movimientos todavía</b>Cada pedido, producto, evento o cambio<br>quedará registrado aquí con su autor.</div>`}`;
+        <div class="ev-date">${dtxt}<br>${hh} · <b style="color:var(--acc2)">${esc(e.who||userName(e.user))}</b></div></div>`;
+    }).join(""):`<div class="empty"><b>Sin movimientos todavía</b>Cada pedido, producto o cambio<br>quedará registrado aquí con su autor.</div>`}`;
   main.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ logFilter=c.dataset.k; render(); });
 }
 
@@ -697,6 +698,11 @@ function renderAgenda(main){
         <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
     }).join("");
   };
+  const hasToday=selDate&&!!(ordersByDate[selDate]&&ordersByDate[selDate].length);
+  const listsHTML=`
+    <div class="sect-title">Próximas entregas</div>
+    ${future.length?future.map(ds=>dayRow(ds)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
+    ${past.length?`<div class="sect-title">Pasadas</div>${past.map(ds=>dayRow(ds)).join("")}`:""}`;
   main.innerHTML=`
     <div class="cal">
       <div class="cal-head">
@@ -709,14 +715,16 @@ function renderAgenda(main){
       <div class="sect-title">📅 ${fdate(selDate)}</div>
       ${dayRow(selDate)||`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado este día.</p>`}
       <button class="addp" id="add-order-day" style="margin:10px 0 8px">+ Nuevo pedido con entrega este día</button>`:""}
-    <div class="sect-title">Próximas entregas</div>
-    ${future.length?future.map(ds=>dayRow(ds)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
-    ${past.length?`<div class="sect-title">Pasadas</div>${past.map(ds=>dayRow(ds)).join("")}`:""}`;
+    ${hasToday?`
+      <button class="addp" id="fold-future" style="margin:2px 0 8px;border-style:solid">${showFuture?"▾ Ocultar otras entregas":"▸ Ver otras entregas ("+(future.length+past.length)+")"}</button>
+      ${showFuture?listsHTML:""}`
+    :listsHTML}`;
   document.getElementById("cal-prev").onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} render(); };
   document.getElementById("cal-next").onclick=()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} render(); };
   main.querySelectorAll(".cal-day[data-ds]").forEach(el=>el.onclick=()=>{
-    selDate=(selDate===el.dataset.ds)?null:el.dataset.ds; render();
+    selDate=(selDate===el.dataset.ds)?null:el.dataset.ds; showFuture=false; render();
   });
+  if(document.getElementById("fold-future"))document.getElementById("fold-future").onclick=()=>{ showFuture=!showFuture; render(); };
   if(document.getElementById("add-order-day"))document.getElementById("add-order-day").onclick=()=>openEditor(null,null,selDate);
   main.querySelectorAll(".o").forEach(el=>el.onclick=()=>openOrder(el.dataset.id));
 }
