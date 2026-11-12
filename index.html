@@ -1087,10 +1087,25 @@ function subscribe(){
     FB.unsub=fsdb.collection("negocios").doc(org).collection("datos").doc("main").onSnapshot(s=>{
       if(!s.exists){ if(FB.migrate&&FB.migrate.orders)db.orders=FB.migrate.orders; pushNow(); return; }
       const d=s.data();
+      const local=JSON.parse(localStorage.getItem(KEY)||"null");
       const keep={theme:db.theme,prefijo:db.prefijo};
       db=Object.assign({orders:[],inventory:[],clients:[],events:[],users:JSON.parse(JSON.stringify(DEFAULT_USERS)),log:[],usuarioId:"u1",prefijo:"+598"},d,keep);
       db.usuarioId="me";
       db.users=[{id:"me",name:FB.perfil.nombre,rol:FB.perfil.rol,email:(auth.currentUser&&auth.currentUser.email)||""}];
+      // recuperar fotos guardadas aparte
+      (db.inventory||[]).forEach(i=>{
+        if(i.photo===true&&local&&Array.isArray(local.inventory)){
+          const loc=local.inventory.find(x=>x.id===i.id);
+          if(loc&&loc.photo)i.photo=loc.photo;
+        }
+      });
+      fsdb.collection("negocios").doc(org).collection("fotos").get().then(fs=>{
+        fs.forEach(fd=>{
+          const it=(db.inventory||[]).find(x=>x.id===fd.id);
+          if(it&&(!it.photo||it.photo===true))it.photo=fd.data().d;
+        });
+        save(); render();
+      }).catch(()=>{});
       save();
       if(view!=="negocios")render();
     });
@@ -1104,12 +1119,33 @@ function subscribe(){
 }
 function pushNow(){
   if(!FB.perfil||!FB.perfil.negocioId)return;
-  fsdb.collection("negocios").doc(FB.perfil.negocioId).collection("datos").doc("main")
-    .set(fbClean({orders:db.orders,inventory:db.inventory,clients:db.clients,events:db.events,log:db.log,users:db.users,prefijo:db.prefijo,theme:db.theme}))
+  const ref=fsdb.collection("negocios").doc(FB.perfil.negocioId);
+  const payload=fbClean({
+    orders:db.orders,clients:db.clients,events:db.events,log:db.log,users:db.users,
+    prefijo:db.prefijo,theme:db.theme,
+    inventory:db.inventory.map(i=>({...i,photo:i.photo?true:null}))
+  });
+  const pushPhotos=()=>{
+    const con=db.inventory.filter(i=>i.photo);
+    pushNow._p=pushNow._p||{};
+    con.forEach(i=>{
+      if(pushNow._p[i.id]===i.photo)return;
+      pushNow._p[i.id]=i.photo;
+      ref.collection("fotos").doc(i.id).set({d:i.photo}).catch(()=>{});
+    });
+  };
+  ref.collection("datos").doc("main").set(payload).then(pushPhotos)
     .catch(()=>{ toast("Sin conexión: se enviará al reconectar"); });
 }
 function save(){
-  localStorage.setItem(KEY,JSON.stringify(db));
+  try{ localStorage.setItem(KEY,JSON.stringify(db)); }
+  catch(e){
+    try{
+      const slim=JSON.parse(JSON.stringify(db));
+      slim.inventory=(slim.inventory||[]).map(i=>({...i,photo:null}));
+      localStorage.setItem(KEY,JSON.stringify(slim));
+    }catch(_){}
+  }
   clearTimeout(save._t);
   save._t=setTimeout(pushNow,700);
 }
