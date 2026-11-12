@@ -408,7 +408,7 @@ function render(){
     :(view==="clients")
     ?`<div class="stat"><b>${db.clients.length}</b><small>Clientes</small></div>`
     :(view==="agenda")
-    ?`<div class="stat"><b>${db.events.length}</b><small>Eventos</small></div>`
+    ?`<div class="stat"><b>${db.orders.filter(o=>o.fecha).length}</b><small>Entregas agendadas</small></div>`
     :``;
   document.getElementById("searchrow").style.display = ["orders","inventory","clients"].includes(view)?"flex":"none";
   document.getElementById("chips").style.display = view==="orders"?"flex":"none";
@@ -451,13 +451,9 @@ function renderHome(main){
   const today=new Date();
   const dsem=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
   const upcoming=[];
-  const allD=[...new Set([
-    ...db.orders.filter(o=>o.fecha).map(o=>o.fecha),
-    ...db.events.filter(e=>e.date).map(e=>e.date)
-  ])].filter(d=>d>=dstr(today)).sort();
+  const allD=[...new Set(db.orders.filter(o=>o.fecha).map(o=>o.fecha))].filter(d=>d>=dstr(today)).sort();
   allD.slice(0,5).forEach(ds=>{
     db.orders.filter(o=>o.fecha===ds).forEach(o=>upcoming.push({ds,tipo:"o",id:o.id,titulo:esc(o.cliente),sub:(o.items||[{}])[0].name||"Pedido",monto:fmt(total(o))}));
-    db.events.filter(e=>e.date===ds).forEach(e=>upcoming.push({ds,tipo:"e",id:e.id,titulo:esc(e.title),sub:e.orderId?"Pedido vinculado":"Evento"}));
   });
   main.innerHTML=`
     <div class="hi">Hola 👋</div>
@@ -486,7 +482,6 @@ function renderHome(main){
       <button class="hlink" data-go="orders">Ver todos los pedidos ›</button>`:""}`;
   main.querySelectorAll("[data-go]").forEach(el=>el.onclick=()=>{ view=el.dataset.go; render(); });
   main.querySelectorAll("[data-o]").forEach(el=>el.onclick=()=>openOrder(el.dataset.o));
-  main.querySelectorAll("[data-e]").forEach(el=>el.onclick=()=>openEvent(el.dataset.e));
 }
 
 /* ---------- Pedidos ---------- */
@@ -678,8 +673,6 @@ function openClient(id){
 function renderAgenda(main){
   const ordersByDate={};
   db.orders.forEach(o=>{ if(o.fecha)(ordersByDate[o.fecha]=ordersByDate[o.fecha]||[]).push(o); });
-  const evByDate={};
-  db.events.forEach(e=>{ if(e.date)(evByDate[e.date]=evByDate[e.date]||[]).push(e); });
   const first=new Date(calYear,calMonth,1);
   const startDow=first.getDay(), days=new Date(calYear,calMonth+1,0).getDate();
   const today=dstr(new Date());
@@ -688,31 +681,21 @@ function renderAgenda(main){
   for(let i=0;i<startDow;i++)cells+=`<div></div>`;
   for(let d=1;d<=days;d++){
     const ds=dstr(new Date(calYear,calMonth,d));
-    const dots=[
-      ...(ordersByDate[ds]||[]).map(o=>`<i style="background:${dotColor(o)}"></i>`),
-      ...(evByDate[ds]||[]).map(()=>`<i style="background:var(--acc)"></i>`)
-    ];
+    const dots=(ordersByDate[ds]||[]).map(o=>`<i style="background:${dotColor(o)}"></i>`);
     cells+=`<div class="cal-day ${ds===today?"today":""} ${ds===selDate?"sel":""} ${dots.length?"has":""}" data-ds="${ds}">${d}${dots.length?`<div class="dots">${dots.join("")}</div>`:""}</div>`;
   }
-  const allDates=[...new Set([...Object.keys(ordersByDate),...Object.keys(evByDate)].filter(Boolean))].sort();
+  const allDates=[...new Set(Object.keys(ordersByDate).filter(Boolean))].sort();
   const nowDs=dstr(new Date());
   const past=allDates.filter(d=>d<nowDs).reverse();
   const future=allDates.filter(d=>d>=nowDs);
-  const evRow=(ds,extra)=>{
-    const dayEvents=(evByDate[ds]||[]).map(e=>{
-      const ord=e.orderId?db.orders.find(x=>x.id===e.orderId):null;
-      return `<div class="ev" data-ev="${e.id}"><div class="dot" style="background:var(--acc)"></div>
-      <div style="flex:1;min-width:0"><h4>${esc(e.title)}</h4><p>${esc(e.cliente||"")}${ord?` · 🛍️ ${esc(ord.cliente)} ${fmt(total(ord))}`:""}</p></div>
-      <div class="ev-date">${fdate(ds)}</div></div>`;
-    }).join("");
-    const dayOrders=(ordersByDate[ds]||[]).map(o=>{
+  const dayRow=(ds)=>{
+    return (ordersByDate[ds]||[]).map(o=>{
       const st=ST[o.estado]||ST.new;
       return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
         ${orderStackHTML(o)}
         <div class="row1"><h3>${esc(o.cliente)}</h3><span class="total">${fmt(total(o))}</span></div>
         <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
     }).join("");
-    return dayEvents+dayOrders;
   };
   main.innerHTML=`
     <div class="cal">
@@ -720,71 +703,22 @@ function renderAgenda(main){
         <button id="cal-prev">‹</button><b id="cal-title">${MESES[calMonth]} ${calYear}</b><button id="cal-next">›</button>
       </div>
       <div class="cal-grid">${DOW.map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div>
-      <p style="font-size:11px;color:var(--mut);text-align:center;margin-top:8px">Toca un día para ver qué hay o agendar algo</p>
+      <p style="font-size:11px;color:var(--mut);text-align:center;margin-top:8px">Toca un día para ver sus entregas</p>
     </div>
     ${selDate?`
       <div class="sect-title">📅 ${fdate(selDate)}</div>
-      ${evRow(selDate)||`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado este día.</p>`}
-      <button class="addp" id="add-ev-day" style="margin:10px 0 8px">+ Agendar algo este día</button>
-      <button class="addp" id="add-order-day" style="margin-bottom:8px">+ Nuevo pedido con entrega este día</button>`:""}
-    <div class="sect-title">Próximos</div>
-    ${future.length?future.map(ds=>evRow(ds)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
-    ${(db.events.filter(e=>!e.date).length)?`<div class="sect-title">Sin fecha</div>${db.events.filter(e=>!e.date).map(e=>`
-      <div class="ev" data-ev="${e.id}"><div class="dot" style="background:var(--line)"></div>
-      <div style="flex:1;min-width:0"><h4>${esc(e.title)}</h4><p>Toca para ponerle fecha</p></div></div>`).join("")}`:""}
-    ${past.length?`<div class="sect-title">Pasados</div>${past.map(ds=>evRow(ds)).join("")}`:""}`;
+      ${dayRow(selDate)||`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado este día.</p>`}
+      <button class="addp" id="add-order-day" style="margin:10px 0 8px">+ Nuevo pedido con entrega este día</button>`:""}
+    <div class="sect-title">Próximas entregas</div>
+    ${future.length?future.map(ds=>dayRow(ds)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
+    ${past.length?`<div class="sect-title">Pasadas</div>${past.map(ds=>dayRow(ds)).join("")}`:""}`;
   document.getElementById("cal-prev").onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} render(); };
   document.getElementById("cal-next").onclick=()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} render(); };
   main.querySelectorAll(".cal-day[data-ds]").forEach(el=>el.onclick=()=>{
     selDate=(selDate===el.dataset.ds)?null:el.dataset.ds; render();
   });
-  if(document.getElementById("add-ev-day"))document.getElementById("add-ev-day").onclick=()=>openEventEditor(null,selDate);
   if(document.getElementById("add-order-day"))document.getElementById("add-order-day").onclick=()=>openEditor(null,null,selDate);
-  main.querySelectorAll(".ev").forEach(el=>el.onclick=()=>openEvent(el.dataset.ev));
   main.querySelectorAll(".o").forEach(el=>el.onclick=()=>openOrder(el.dataset.id));
-}
-function openEventEditor(e, presetDate){
-  const isNew=!e; e=e||{title:"",date:presetDate||"",cliente:"",orderId:null};
-  openSheet(`<div class="grab"></div><h2>${isNew?"Nuevo evento":"Editar evento"}</h2>
-    <label>¿Qué es?</label><input id="ev-title" value="${esc(e.title)}" placeholder="Ej. Entregar pedido a Helen">
-    <label>Fecha</label><input id="ev-date" type="date" value="${e.date||""}">
-    <label>Pedido vinculado (opcional)</label><select id="ev-order">
-      <option value="">— Ninguno —</option>
-      ${db.orders.map(o=>`<option value="${o.id}" ${e.orderId===o.id?"selected":""}>${esc(o.cliente)} · ${esc((o.items||[{}])[0].name||"Pedido")} · ${fmt(total(o))}</option>`).join("")}
-    </select>
-    <button class="big" id="ev-save">${isNew?"Agendar":"Guardar cambios"}</button>
-    ${isNew?"":`<button class="ghost danger" id="ev-del">Eliminar evento</button>`}
-    <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
-  document.getElementById("ev-save").onclick=()=>{
-    const title=document.getElementById("ev-title").value.trim();
-    if(!title){ toast("Escribe qué es"); return; }
-    e.title=title; e.date=document.getElementById("ev-date").value;
-    const oid=document.getElementById("ev-order").value||null;
-    e.orderId=oid;
-    const ord=oid?db.orders.find(x=>x.id===oid):null;
-    e.cliente=ord?ord.cliente:e.cliente;
-    if(isNew)db.events.push(e);
-    log(isNew?"event_new":"event_edit",`${title}${e.date?" · "+fdate(e.date):""}`);
-    save(); closeSheet(); toast("Agendado ✓");
-  };
-  if(document.getElementById("ev-del"))document.getElementById("ev-del").onclick=()=>{
-    if(!confirm("¿Eliminar evento?"))return;
-    log("event_del",e.title);
-    db.events=db.events.filter(x=>x.id!==e.id); save(); closeSheet(); toast("Evento eliminado");
-  };
-}
-function openEvent(id){
-  const e=db.events.find(x=>x.id===id); if(!e)return;
-  const ord=e.orderId?db.orders.find(x=>x.id===e.orderId):null;
-  openSheet(`<div class="grab"></div><h2>${esc(e.title)}</h2>
-    <p style="font-size:14px;color:var(--mut);margin-top:6px">📅 ${fdate(e.date)||"Sin fecha"}${e.cliente?` · ${esc(e.cliente)}`:""}</p>
-    ${ord?`<div class="o" data-id="${ord.id}" style="margin-top:12px;cursor:pointer">
-      <div class="row1"><h3 style="font-size:14px">${esc(ord.cliente)}</h3><span class="total" style="font-size:14px">${fmt(total(ord))}</span></div>
-      <div class="badges"><span class="b ${(ST[ord.estado]||ST.new).c}">${(ST[ord.estado]||ST.new).l}</span></div></div>`:""}
-    <button class="big" id="ev-edit">Editar</button>
-    <button class="ghost" onclick="closeSheet()">Cerrar</button>`);
-  document.getElementById("ev-edit").onclick=()=>openEventEditor(e);
-  if(ord)document.querySelector(".sheet-in .o").onclick=()=>openOrder(ord.id);
 }
 
 /* ---------- Editor de pedido ---------- */
@@ -971,18 +905,6 @@ function openOrder(id){
 /* ---------- Ajustes ---------- */
 function renderSettings(){
   return `<div class="grab" style="margin-top:14px"></div><h2 style="font-size:22px;margin:8px 0 14px">Ajustes</h2>
-  <div class="sett-card"><h3>👤 Cuentas y perfil</h3>
-    <p>¿Quién está usando el teléfono ahora? Cada movimiento queda registrado con este nombre en el Historial.</p>
-    <div class="seg" id="seg-user" style="margin-top:10px">
-      ${(db.users||[]).map(u=>`<button data-k="${u.id}" class="${(db.usuarioId||"u1")===u.id?"on":""}">${esc(u.name)}</button>`).join("")}
-    </div>
-    <p style="margin-top:14px">Correos de recuperación (para cuando conectemos la base de datos y poder restablecer la contraseña):</p>
-    ${(db.users||[]).map(u=>`<div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-      <span style="font-size:13px;color:var(--mut);min-width:52px">${esc(u.name)}</span>
-      <input id="email-${u.id}" inputmode="email" value="${esc(u.email||"")}" placeholder="correo@ejemplo.com">
-    </div>`).join("")}
-    <button class="ghost" id="emails-save" style="margin-top:10px">Guardar correos</button>
-  </div>
   <div class="sett-card"><h3>🌗 Apariencia</h3>
     <p>Cambia entre modo oscuro y claro (también con el botón de arriba).</p>
     <button class="ghost" id="themeBtn2" style="margin-top:12px">Cambiar a modo ${((db.theme||"dark")==="dark")?"claro ☀️":"oscuro 🌙"}</button>
@@ -1010,13 +932,6 @@ function renderSettings(){
 }
 function wireSettings(){
   document.getElementById("backBtn").onclick=()=>{ view="home"; render(); };
-  document.querySelectorAll("#seg-user button").forEach(b=>b.onclick=()=>{
-    if(db.usuarioId!==b.dataset.k){ db.usuarioId=b.dataset.k; log("user_switch","Ahora usa el teléfono: "+userName(b.dataset.k)); save(); toast("Cuenta: "+userName(b.dataset.k)); view="settings"; render(); }
-  });
-  document.getElementById("emails-save").onclick=()=>{
-    (db.users||[]).forEach(u=>{ const el=document.getElementById("email-"+u.id); if(el)u.email=el.value.trim(); });
-    save(); toast("Correos guardados ✓");
-  };
   document.getElementById("prefijo-save").onclick=()=>{
     let v=document.getElementById("prefijo-in").value.trim();
     if(v&&!v.startsWith("+"))v="+"+v.replace(/\D/g,"");
@@ -1059,7 +974,7 @@ document.getElementById("fab").onclick=()=>{
   if(view==="orders")openEditor(null);
   else if(view==="inventory")openInvEditor(null);
   else if(view==="clients")openNewClient();
-  else if(view==="agenda")openEventEditor(null);
+  else if(view==="agenda")openEditor(null, null, selDate||dstr(new Date()));
 };
 function openNewClient(){
   openSheet(`<div class="grab"></div><h2>Nuevo cliente</h2>
