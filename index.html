@@ -61,9 +61,9 @@ button{cursor:pointer;border:none;background:none}
   border:1.5px solid var(--line);font-size:13px;font-weight:600;
   background:transparent;color:var(--mut);
 }
-.chip.c-green{background:color-mix(in srgb,var(--c-green) 14%,transparent);color:var(--c-green);border-color:color-mix(in srgb,var(--c-green) 40%,transparent)}
-.chip.c-orange{background:color-mix(in srgb,var(--c-orange) 14%,transparent);color:var(--c-orange);border-color:color-mix(in srgb,var(--c-orange) 40%,transparent)}
-.chip.c-blue{background:color-mix(in srgb,var(--c-blue) 14%,transparent);color:var(--c-blue);border-color:color-mix(in srgb,var(--c-blue) 40%,transparent)}
+.chip.c-green{background:transparent;color:var(--c-green);border-color:var(--line)}
+.chip.c-orange{background:transparent;color:var(--c-orange);border-color:var(--line)}
+.chip.c-blue{background:transparent;color:var(--c-blue);border-color:var(--line)}
 .chip.c-neutral{color:var(--mut)}
 .chip.on.c-green{background:var(--c-green);border-color:var(--c-green);color:#fff}
 .chip.on.c-orange{background:var(--c-orange);border-color:var(--c-orange);color:#fff}
@@ -182,11 +182,12 @@ nav button.on{color:var(--acc2)}
 .cal-head button{width:34px;height:34px;border-radius:10px;background:var(--card2);color:var(--mut);font-size:16px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
 .cal-grid .dow{font-size:10px;color:var(--mut);padding:4px 0}
-.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:10px;position:relative;cursor:pointer}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:10px;position:relative;cursor:pointer;padding-bottom:6px;box-sizing:border-box}
 .cal-day.today{background:var(--card2);font-weight:700}
 .cal-day.sel{outline:2px solid var(--acc);background:var(--card2);font-weight:700}
 .cal-day.has{font-weight:700}
-.cal-day.has::after{content:"";position:absolute;bottom:3px;width:5px;height:5px;border-radius:50%;background:var(--acc)}
+.cal-day .dots{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:center;gap:2px}
+.cal-day .dots i{width:4px;height:4px;border-radius:50%;display:block}
 .ev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
 .ev .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .ev h4{font-size:15px}
@@ -410,7 +411,11 @@ function openInvEditor(it){
   openSheet(`<div class="grab"></div><h2>${isNew?"Nuevo producto":"Editar producto"}</h2>
     ${it.photo?`<img class="inv-photo" src="${it.photo}" style="border-radius:14px;margin-top:12px">`:""}
     <input type="file" id="inv-photo" accept="image/*" style="display:none">
-    <button class="ghost" id="photoBtn" style="margin-top:12px">${it.photo?"📷 Cambiar foto":"📷 Tomar foto / elegir imagen"}</button>
+    <input type="file" id="inv-cam" accept="image/*" capture="environment" style="display:none">
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="ghost" id="camBtn" style="margin:0;flex:1">📷 Tomar foto</button>
+      <button class="ghost" id="photoBtn" style="margin:0;flex:1">🖼️ Galería</button>
+    </div>
     <label>Tipo de prenda (ícono)</label><div class="seg" id="seg-cat">
       ${CATS.map(c=>`<button data-k="${c[0]}" class="${cat===c[0]?"on":""}">${c[1]} ${c[2]}</button>`).join("")}
     </div>
@@ -422,7 +427,12 @@ function openInvEditor(it){
     cat=b.dataset.k;
     document.querySelectorAll("#seg-cat button").forEach(x=>x.classList.toggle("on",x===b));
   });
+  document.getElementById("camBtn").onclick=()=>document.getElementById("inv-cam").click();
   document.getElementById("photoBtn").onclick=()=>document.getElementById("inv-photo").click();
+  document.getElementById("inv-cam").onchange=e=>{
+    const f=e.target.files[0]; if(!f)return;
+    compressPhoto(f,d=>{ it.photo=d; openInvEditor(it); });
+  };
   document.getElementById("inv-photo").onchange=e=>{
     const f=e.target.files[0]; if(!f)return;
     compressPhoto(f,d=>{ it.photo=d; openInvEditor(it); });
@@ -520,12 +530,16 @@ function renderAgenda(main){
   const first=new Date(calYear,calMonth,1);
   const startDow=first.getDay(), days=new Date(calYear,calMonth+1,0).getDate();
   const today=dstr(new Date());
+  const dotColor=o=>{const st=ST[o.estado]||ST.new;return st.c==="paid"?"var(--c-green)":st.c==="msg"?"var(--c-orange)":st.c==="due"?"var(--c-blue)":"var(--c-yellow)";};
   let cells="";
   for(let i=0;i<startDow;i++)cells+=`<div></div>`;
   for(let d=1;d<=days;d++){
     const ds=dstr(new Date(calYear,calMonth,d));
-    const has=(ordersByDate[ds]||evByDate[ds])?"has":"";
-    cells+=`<div class="cal-day ${ds===today?"today":""} ${ds===selDate?"sel":""} ${has}" data-ds="${ds}">${d}</div>`;
+    const dots=[
+      ...(ordersByDate[ds]||[]).map(o=>`<i style="background:${dotColor(o)}"></i>`),
+      ...(evByDate[ds]||[]).map(()=>`<i style="background:var(--acc)"></i>`)
+    ];
+    cells+=`<div class="cal-day ${ds===today?"today":""} ${ds===selDate?"sel":""} ${dots.length?"has":""}" data-ds="${ds}">${d}${dots.length?`<div class="dots">${dots.join("")}</div>`:""}</div>`;
   }
   const allDates=[...new Set([...Object.keys(ordersByDate),...Object.keys(evByDate)].filter(Boolean))].sort();
   const nowDs=dstr(new Date());
@@ -664,7 +678,8 @@ function openEditor(orig, presetClient, presetDate){
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
 
   let items=JSON.parse(JSON.stringify(base.items&&base.items.length?base.items:[{name:"",price:"",qty:1}]));
-  let mode="inv", estado=base.estado, vendedor=base.vendedor;
+  const fromInv=orig&&(orig.items||[]).every(i=>db.inventory.some(x=>x.name===i.name));
+  let mode=orig?(fromInv?"inv":"man"):"inv", estado=base.estado, vendedor=base.vendedor;
   let picked={}; // iid -> {qty, price}
   (base.items||[]).forEach(i=>{ const inv=db.inventory.find(x=>x.name===i.name); if(inv)picked[inv.id]={qty:i.qty||1,price:i.price}; });
   const calc=()=>{
@@ -694,6 +709,9 @@ function openEditor(orig, presetClient, presetDate){
     document.querySelectorAll(".prow .del").forEach(el=>el.onclick=()=>{ items.splice(el.dataset.i,1); if(!items.length)items=[{name:"",price:"",qty:1}]; drawMan(); calc(); });
   };
   drawInv(); drawMan(); calc();
+  document.querySelectorAll("#mode-seg button").forEach(x=>x.classList.toggle("on",x.dataset.m===mode));
+  document.getElementById("mode-inv").style.display=mode==="inv"?"block":"none";
+  document.getElementById("mode-man").style.display=mode==="man"?"block":"none";
   document.querySelectorAll("#mode-seg button").forEach(b=>b.onclick=()=>{
     mode=b.dataset.m;
     document.querySelectorAll("#mode-seg button").forEach(x=>x.classList.toggle("on",x===b));
@@ -899,6 +917,15 @@ document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
 
 applyTheme();
 render();
+
+/* ---------- botón atrás del móvil ---------- */
+function trapBack(){ history.pushState({t:Date.now()},""); }
+trapBack();
+window.addEventListener("popstate",()=>{
+  if(document.getElementById("sheet").classList.contains("open")){ closeSheet(); }
+  else if(view!=="orders"){ view="orders"; render(); }
+  trapBack();
+});
 </script>
 </body>
 </html>
