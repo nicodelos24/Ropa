@@ -407,7 +407,8 @@ const LOG_META={
 
 /* ================= RENDER ================= */
 function render(){
-  if(!FB.uid||!FB.perfil){ renderAuthScreen(); return; }
+  if(!FB.uid){ renderAuthScreen(); return; }
+  if(!FB.perfil){ if(!FB.pend)renderAuthScreen(); return; }
   const isOwner=FB.perfil.rol==="owner";
   const noBiz=isOwner&&!FB.perfil.negocioId;
   document.getElementById("auth").style.display="none";
@@ -1065,8 +1066,9 @@ applyTheme();
 const firebaseConfig={apiKey:"AIzaSyASz9-F603MdJ4wVQgIxnve0VMOdehkTvQ",authDomain:"ropa-e7ba3.firebaseapp.com",projectId:"ropa-e7ba3",storageBucket:"ropa-e7ba3.firebasestorage.app",messagingSenderId:"420186394511",appId:"1:420186394511:web:094c70ae8922354351c5fa"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),fsdb=firebase.firestore();
+fsdb.settings({experimentalForceLongPolling:true});
 fsdb.enablePersistence().catch(()=>{});
-let FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null};
+let FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null,pend:false,pendName:null};
 function fbClean(d){ return JSON.parse(JSON.stringify(d,(k,v)=>v===undefined?null:v)); }
 function subscribe(){
   if(FB.unsub){FB.unsub();FB.unsub=null;}
@@ -1112,10 +1114,15 @@ function save(){
 }
 auth.onAuthStateChanged(async u=>{
   FB.uid=u?u.uid:null;
-  if(!u){ FB.perfil=null; if(FB.unsub){FB.unsub();FB.unsub=null;} if(FB.unorg){FB.unorg();FB.unorg=null;} render(); return; }
+  if(!u){ FB.perfil=null;FB.pend=false;FB.pendName=null; if(FB.unsub){FB.unsub();FB.unsub=null;} if(FB.unorg){FB.unorg();FB.unorg=null;} render(); return; }
   try{
     const pd=await fsdb.collection("usuarios").doc(u.uid).get();
-    if(!pd.exists){ renderAuthScreen("Cuenta sin registro. Ingresá con tu código de activación."); await auth.signOut(); return; }
+    if(!pd.exists){
+      FB.pend=true;
+      renderAuthScreen("Último paso: activá tu cuenta con tu código.","completar");
+      return;
+    }
+    FB.pend=false;
     FB.perfil=pd.data();
     if(FB.perfil.rol==="owner")fsdb.collection("config").doc("boot").update({ownerTaken:true}).catch(()=>{});
     const local=JSON.parse(localStorage.getItem(KEY)||"null");
@@ -1123,6 +1130,13 @@ auth.onAuthStateChanged(async u=>{
     subscribe();
   }catch(e){ renderAuthScreen("No se pudo leer tu cuenta: "+e.message); }
 });
+async function resolveActivation(code){
+  const q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
+  if(q.empty)return{rol:"owner",negocioId:null};
+  const n=q.docs[0];
+  if(n.data().activo===false)throw new Error("Este negocio está pausado.");
+  return{rol:n.data().usadoAdmin?"user":"admin",negocioId:n.id};
+}
 /* ---------- pantalla de cuenta ---------- */
 function renderAuthScreen(msg,mode){
   mode=mode||"login";
@@ -1133,15 +1147,23 @@ function renderAuthScreen(msg,mode){
       <label>Correo</label><input id="au-mail" type="email" placeholder="tucorreo@gmail.com">
       <label>Contraseña</label><input id="au-pass" type="password" placeholder="••••••••">
       <button class="abig" id="au-go">Ingresar</button>
+      <button class="abig" id="au-google" style="background:var(--card2);color:var(--txt);border:1px solid var(--line);margin-top:9px">Ingresar con Google</button>
       <button class="aghost" id="au-reset">Olvidé mi contraseña</button>
       <button class="aghost" id="au-sw2">Crear cuenta nueva ›</button>`
     :mode==="signup"?`
       <label>Tu nombre</label><input id="au-name" placeholder="Cómo te muestran en la app">
       <label>Correo</label><input id="au-mail" type="email" placeholder="tucorreo@gmail.com">
       <label>Contraseña (mínimo 6 caracteres)</label><input id="au-pass" type="password" placeholder="La que quieras usar">
-      <label>Código de activación</label><input id="au-code" placeholder="ROPA-XXXX" autocapitalize="characters">
+      <label>Código de activación</label><input id="au-code" placeholder="ROPA-XXXX o tu frase secreta" autocapitalize="characters">
       <button class="abig" id="au-go">Crear mi cuenta</button>
+      <button class="abig" id="au-google" style="background:var(--card2);color:var(--txt);border:1px solid var(--line);margin-top:9px">Continuar con Google</button>
       <button class="aghost" id="au-sw1">‹ Ya tengo cuenta</button>`
+    :mode==="completar"?`
+      <p style="font-size:14px;color:var(--mut)">Conectado como <b>${esc((auth.currentUser&&auth.currentUser.email)||"")}</b></p>
+      <label>Tu nombre</label><input id="au-name" value="${esc(FB.pendName||(auth.currentUser&&auth.currentUser.displayName)||"")}" placeholder="Cómo te muestran en la app">
+      <label>Código de activación</label><input id="au-code" placeholder="ROPA-XXXX o tu frase secreta" autocapitalize="characters">
+      <button class="abig" id="au-go">Activar mi cuenta</button>
+      <button class="aghost" id="au-out">Salir y volver al inicio</button>`
     :`
       <p style="font-size:14px;color:var(--mut)">Escribí tu correo y te mandamos un enlace para crear una contraseña nueva.</p>
       <label>Correo</label><input id="au-mail" type="email" placeholder="tucorreo@gmail.com">
@@ -1149,8 +1171,9 @@ function renderAuthScreen(msg,mode){
       <button class="aghost" id="au-sw1">‹ Volver</button>`;
   a.innerHTML=`
     <div class="alogo">Ropa<span>.</span></div>
-    <div class="asub">${mode==="signup"?"Activá tu negocio con el código que te dieron":mode==="reset"?"Recuperar contraseña":"Ingresá para ver tus ventas"}</div>
+    <div class="asub">${mode==="signup"?"Activá tu negocio con el código que te dieron":mode==="reset"?"Recuperar contraseña":mode==="completar"?"Casi listo":"Ingresá para ver tus ventas"}</div>
     <div class="abox">${f}<div class="${mode==="reset"?"aok":"aerr"}" id="au-msg">${esc(msg||"")}</div></div>`;
+  FB.pend=mode==="completar";
   const msgEl=document.getElementById("au-msg");
   const err=t=>{ msgEl.textContent=t; msgEl.className="aerr"; };
   const okm=t=>{ msgEl.textContent=t; msgEl.className="aok"; };
@@ -1159,6 +1182,37 @@ function renderAuthScreen(msg,mode){
   const sw2=document.getElementById("au-sw2");
   if(sw2)sw2.onclick=()=>renderAuthScreen("","signup");
   const g=document.getElementById("au-go");
+  const gg=document.getElementById("au-google");
+  if(gg)gg.onclick=async()=>{
+    try{ await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    catch(e){ err(e.code==="auth/popup-closed-by-user"?"":"No se pudo abrir Google: "+e.message); }
+  };
+  if(mode==="completar"){
+    document.getElementById("au-out").onclick=()=>logout();
+    g.onclick=async()=>{
+      const name=document.getElementById("au-name").value.trim();
+      const code=document.getElementById("au-code").value.trim().toUpperCase();
+      if(!name)return err("Escribí tu nombre");
+      if(!code)return err("Escribí tu código");
+      try{
+        const act=await resolveActivation(code);
+        const data={negocioId:act.negocioId,nombre:name,email:(auth.currentUser.email||""),rol:act.rol,creado:Date.now()};
+        if(act.rol==="owner")data.clave=code;
+        await fsdb.collection("usuarios").doc(auth.currentUser.uid).set(data);
+        if(act.rol==="owner"){
+          await fsdb.collection("usuarios").doc(auth.currentUser.uid).update({clave:firebase.firestore.FieldValue.delete()});
+          fsdb.collection("config").doc("boot").update({ownerTaken:true}).catch(()=>{});
+        }else{
+          fsdb.collection("negocios").doc(act.negocioId).update({usadoAdmin:true}).catch(()=>{});
+        }
+        FB.pend=false;FB.pendName=null;
+        localStorage.removeItem("ropa_sync_"+auth.currentUser.uid);
+      }catch(e){
+        err((e.code||"").includes("permission")||e.code==="permission-denied"?"Código no válido. Revisá con quien te lo pasó.":"No se pudo activar: "+e.message);
+      }
+    };
+    return;
+  }
   if(mode==="reset"){
     g.onclick=async()=>{
       const m=document.getElementById("au-mail").value.trim();
@@ -1180,31 +1234,11 @@ function renderAuthScreen(msg,mode){
     const code=document.getElementById("au-code").value.trim().toUpperCase();
     if(!name)return err("Escribí tu nombre");
     if(p.length<6)return err("La contraseña necesita al menos 6 caracteres");
+    FB.pendName=name;
     try{
-      let rol,negocioId=null;
-      const q=await fsdb.collection("negocios").where("codigo","==",code).limit(1).get();
-      if(q.empty){
-        const clave=code;
-        try{
-          const cred=await auth.createUserWithEmailAndPassword(m,p);
-          await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId:null,nombre:name,email:m,rol:"owner",creado:Date.now(),clave});
-          await fsdb.collection("usuarios").doc(cred.user.uid).update({clave:firebase.firestore.FieldValue.delete()});
-          localStorage.removeItem("ropa_sync_"+cred.user.uid);
-          return;
-        }catch(e2){
-          if(e2.code==="auth/email-already-in-use")return err("Ese correo ya tiene cuenta: usá Ingresar");
-          if(e2.code==="auth/weak-password")return err("La contraseña necesita al menos 6 caracteres");
-          if((e2.code||"").includes("permission"))return err("Código no válido. Revisá con quien te lo pasó.");
-          return err("No se pudo crear: "+e2.message);
-        }
-      }
-      const n=q.docs[0];
-      if(n.data().activo===false)return err("Este negocio está pausado.");
-      rol=n.data().usadoAdmin?"user":"admin";negocioId=n.id;
-      const cred=await auth.createUserWithEmailAndPassword(m,p);
-      await fsdb.collection("usuarios").doc(cred.user.uid).set({negocioId,nombre:name,email:m,rol,creado:Date.now()});
-      if(negocioId)fsdb.collection("negocios").doc(negocioId).update({usadoAdmin:true}).catch(()=>{});
-      localStorage.removeItem("ropa_sync_"+cred.user.uid);
+      await auth.createUserWithEmailAndPassword(m,p);
+      FB.pend=true;
+      renderAuthScreen("Cuenta creada. Último paso: activá tu negocio.","completar");
     }catch(e){
       err(e.code==="auth/email-already-in-use"?"Ese correo ya tiene cuenta: usá Ingresar":e.code==="auth/weak-password"?"La contraseña necesita al menos 6 caracteres":"No se pudo crear: "+e.message);
     }
