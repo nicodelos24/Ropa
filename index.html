@@ -220,11 +220,6 @@ nav button.on{color:var(--navon)}
 .dcard .dprice{font-size:18px;font-weight:800;letter-spacing:.2px}
 .dcard .dname{font-size:14.5px;font-weight:600;margin-top:2px}
 .dcard .dqty{font-size:12px;color:var(--mut);margin-top:1px}
-.dstack .hacts{position:absolute;top:-6px;right:0;z-index:130}
-.dstack .hacts button{background:rgba(15,20,28,.62)}
-.dstack .hacts button svg{color:#fff}
-.dstack .hacts button.e svg{color:#8fb0ff}
-.dstack .hacts button.d svg{color:#ff9d7a}
 .dcard:active{box-shadow:0 10px 22px rgba(0,0,0,.24)}
 .dcard .dthumb{width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
 .dcard .dprice{font-size:17px;font-weight:800;letter-spacing:.2px}
@@ -284,10 +279,10 @@ nav button.on{color:var(--navon)}
 }
 .hacts button svg{width:20px;height:20px}
 .dclose{position:sticky;top:-10px;z-index:6;display:flex;justify-content:flex-end;padding:2px;margin:0 -18px 2px;padding-right:10px;padding-left:10px;background:var(--bg)}
-.dclose button{width:44px;height:44px;border-radius:13px;background:var(--card2);color:var(--mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dclose button{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.10);color:var(--mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .dclose button svg{width:18px;height:18px}
 .dclose #hEdit svg{color:var(--navon)}
-.dclose #hDel svg{color:#ff9d7a}
+.dclose #hDel svg{color:#e8734d}
 .big.wa svg{width:21px;height:21px;flex-shrink:0}
 #main.pad-xl::after{height:230px}
 .ferr{display:flex;gap:6px;align-items:center;color:var(--c-orange);font-size:12.5px;font-weight:600;margin-top:6px}
@@ -314,11 +309,16 @@ nav button.on{color:var(--navon)}
 .lightbox .lbx svg{width:20px;height:20px}
 @keyframes lbIn{from{opacity:0}to{opacity:1}}
 .strow{display:flex;gap:6px;flex-wrap:wrap}
-.strow .b{opacity:.85;cursor:pointer;border:none;padding:5px 11px}
-.strow .b.on{opacity:1;box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--navon);color:#fff}
-.strow .b.paid.on{color:#03301a}
-.strow .b.msg.on{color:#3d2500}
-.strow .b.new.on{color:var(--mut)}
+.strow .b{opacity:1;cursor:pointer;border:1.5px solid transparent;padding:6px 12px;font-size:11.5px}
+.strow .b.yellow{background:#ececf3;color:#5a5a72}
+.strow .b.orange{background:#ffe1c4;color:#9c5400}
+.strow .b.blue{background:#dbe5ff;color:#2748c9}
+.strow .b.green{background:#cdf2de;color:#0a6e40}
+.strow .b.on{border-color:currentColor;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+html[data-theme="dark"] .strow .b.yellow{background:rgba(255,255,255,.12);color:#c9c9dd}
+html[data-theme="dark"] .strow .b.orange{background:rgba(255,145,0,.22);color:#ffc48f}
+html[data-theme="dark"] .strow .b.blue{background:rgba(41,98,255,.28);color:#b6c6ff}
+html[data-theme="dark"] .strow .b.green{background:rgba(0,200,83,.22);color:#8ee8b6}
 .cqbtn{background:color-mix(in srgb,var(--c-blue) 26%,var(--card))!important;color:#3554c9!important;border:1.5px solid color-mix(in srgb,var(--navon) 70%,transparent)!important;font-weight:800}
 html:not([data-theme="light"]) .cqbtn{color:#d4deff!important}
 .o .nota{font-size:11.5px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
@@ -330,10 +330,10 @@ html:not([data-theme="light"]) .cqbtn{color:#d4deff!important}
 .inv-body h4{font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inv-body p{font-size:12.5px;font-weight:700;color:var(--acc2);margin-top:1px}
 .inv-actions{position:absolute;top:6px;right:6px;display:flex;gap:6px}
-.inv-actions button{width:36px;height:36px;border-radius:11px;background:rgba(15,20,28,.55);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.inv-actions button{width:36px;height:36px;border-radius:50%;background:rgba(15,20,28,.62);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .inv-actions button svg{width:16px;height:16px}
-.inv-actions button.e svg{color:#8fb0ff}
-.inv-actions button.d svg{color:#ff9d7a}
+.inv-actions button.e svg{color:#a9c2ff}
+.inv-actions button.d svg{color:#ffab8f}
 /* clientes */
 .cli{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px}
 .cli .row1{display:flex;justify-content:space-between;align-items:center}
@@ -633,7 +633,12 @@ document.getElementById("themeBtn").onclick=()=>{
 
 /* ---------- sheet ---------- */
 function openSheet(html){ document.getElementById("sheet-in").innerHTML=html; document.getElementById("sheet-in").scrollTop=0; document.getElementById("sheet").classList.add("open"); }
-function closeSheet(){ document.getElementById("sheet").classList.remove("open"); render(); }
+function closeSheet(){ if(edGuard&&!edGuardBusy){ edGuard=false; edSuppress=true; history.back(); } document.getElementById("sheet").classList.remove("open"); render(); }
+let edGuard=false, edDirty=false, edGuardBusy=false, edSuppress=false;
+function edGuardOn(){ if(!edGuard){ history.pushState({edguard:1},""); edGuard=true; } edDirty=false; }
+const _si=document.getElementById("sheet-in");
+_si.addEventListener("input",()=>{edDirty=true},true);
+_si.addEventListener("click",e=>{ const t=e.target.closest('.invpick button,.addp,.seg button'); if(t)edDirty=true; },true);
 document.getElementById("sheet").onclick=e=>{ if(e.target.id==="sheet") closeSheet(); };
 
 /* ---------- find / upsert client ---------- */
@@ -884,8 +889,9 @@ function openInvEditor(it){
     <label>Precio</label><input id="inv-price" inputmode="numeric" value="${it.price??""}" placeholder="$">
     <button class="big" id="inv-save">${isNew?"Agregar al inventario":"Guardar cambios"}</button>
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+  edGuardOn();
   const updPrev=d=>{
-    it.photo=d;
+    it.photo=d; edDirty=true;
     document.getElementById("inv-prev").innerHTML=`<img class="inv-photo" src="${esc(d)}" style="border-radius:14px;margin-top:12px">`;
   };
   document.querySelectorAll("#seg-cat button").forEach(b=>b.onclick=()=>{
@@ -1006,6 +1012,7 @@ function openClient(id){
       <button class="big" id="ce-save">Guardar</button>
       <button class="ghost danger" id="ce-del">Eliminar cliente</button>
       <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+    edGuardOn();
     document.getElementById("ce-tel").oninput=e=>{ e.target.value=maskTel(e.target.value); };
     document.getElementById("ce-save").onclick=()=>{
       c.name=document.getElementById("ce-name").value.trim()||c.name;
@@ -1132,6 +1139,7 @@ function openEditor(orig, presetClient, presetDate){
     <label>Notas (opcional)</label><textarea id="f-notas" rows="2" placeholder="Ej. Entregar el viernes">${esc(base.notas||"")}</textarea>
     <button class="big" id="saveBtn">${isNew?"Guardar pedido":"Guardar cambios"}</button>
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+  edGuardOn();
 
   let items=JSON.parse(JSON.stringify(base.items&&base.items.length?base.items:[{name:"",price:"",qty:1}]));
   items.forEach(i=>{
@@ -1302,7 +1310,7 @@ function openOrder(id){
       <div class="strow">${["new","msg","due","paid"].map(k=>`<button class="b ${STC[k]} ${k===o.estado?"on":""}" data-st="${k}">${ST[k].l}</button>`).join("")}</div>
       ${o.fecha?`<span style="font-size:11px;color:var(--mut);align-self:center">📅 ${fdateShort(o.fecha)}</span>`:""}
     </div>
-    ${items.length?`    <div class="dstack" id="dstack"><div class="hacts"><button class="e" id="hEdit2" aria-label="Editar pedido">${ICON.pencil}</button><button class="d" id="hDel2" aria-label="Eliminar pedido">${ICON.trash}</button></div>${dcards}</div>${items.length>1||hero?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para traerla al frente${hero?" · otro toque amplía su foto":""}</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
+    ${items.length?`    <div class="dstack" id="dstack">${dcards}</div>${items.length>1||hero?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para traerla al frente${hero?" · otro toque amplía su foto":""}</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
     <div class="totalbar"><span>Total</span><b>${fmt(total(o))}</b></div>
     ${o.estado==="due"?`<div style="margin-top:14px;display:flex;gap:8px;align-items:center">
       <button class="ghost cqbtn" style="margin:0" id="cq-minus">− Cuota</button>
@@ -1314,7 +1322,7 @@ function openOrder(id){
   const dstack=document.getElementById("dstack");
   if(dstack){
     const relayout=()=>{const cs=[...dstack.querySelectorAll(".dcard")];
-      const off=cs.length>1?Math.min(56,Math.max(36,(dstack.clientWidth-240)/(cs.length-1))):0;
+      const off=cs.length>1?Math.min(110,Math.max(60,(dstack.clientWidth-240)/(cs.length-1))):0;
       cs.forEach((c,i)=>{
         c.style.transform=`translateX(${i*off}px)`;
         c.style.width=Math.min(340,dstack.clientWidth-(cs.length-1)*off)+"px";
@@ -1337,8 +1345,8 @@ function openOrder(id){
     log("order_status",`${o.cliente} → ${(ST[o.estado]||ST.new).l}`);
     save(); render(); openOrder(id); toast(`Estado: ${(ST[o.estado]||ST.new).l}`);
   });
-  document.getElementById("hEdit").onclick=document.getElementById("hEdit2").onclick=()=>openEditor(o);
-  document.getElementById("hDel").onclick=document.getElementById("hDel2").onclick=async()=>{
+  document.getElementById("hEdit").onclick=()=>openEditor(o);
+  document.getElementById("hDel").onclick=async()=>{
     if(!(await askConfirm({title:"¿Eliminar este pedido?",msg:`El pedido de ${o.cliente||"este cliente"} se quita de la lista. El inventario no cambia.`,ok:"Eliminar pedido"})))return;
     log("order_del",`${o.cliente} · ${fmt(total(o))}`);
     db.orders=db.orders.filter(x=>x.id!==id); save(); closeSheet(); toast("Pedido eliminado");
@@ -1467,6 +1475,7 @@ function openNewClient(){
     <label>Notas</label><textarea id="nc-notas" rows="2"></textarea>
     <button class="big" id="nc-save">Guardar cliente</button>
     <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
+  edGuardOn();
   document.getElementById("nc-tel").oninput=e=>{ e.target.value=maskTel(e.target.value); };
   document.getElementById("nc-save").onclick=()=>{
     const name=document.getElementById("nc-name").value.trim();
@@ -1898,7 +1907,21 @@ render();
 function trapBack(){ history.pushState({t:Date.now()},""); }
 trapBack();
 window.addEventListener("popstate",()=>{
-  if(document.getElementById("sheet").classList.contains("open")){ closeSheet(); }
+  if(edSuppress){ edSuppress=false; trapBack(); return; }
+  const sheetOpen=document.getElementById("sheet").classList.contains("open");
+  const hasForm=document.getElementById("saveBtn")||document.getElementById("inv-save")||document.getElementById("ce-save")||document.getElementById("nc-save");
+  if(edGuard){
+    if(sheetOpen&&hasForm){
+      if(!edDirty){ edGuard=false; edGuardBusy=true; closeSheet(); edGuardBusy=false; trapBack(); return; }
+      askConfirm({title:"¿Salir sin guardar?",msg:"Hiciste cambios en este formulario. Si sales ahora, se pierden.",ok:"Salir sin guardar",cancel:"Seguir editando"}).then(ok=>{
+        if(ok){ edGuard=false; edGuardBusy=true; closeSheet(); edGuardBusy=false; }
+        else{ history.pushState({edguard:1},""); }
+      });
+      return;
+    }
+    edGuard=false;
+  }
+  if(sheetOpen){ closeSheet(); }
   else if(view!=="home"){ view="home"; render(); }
   trapBack();
 });
