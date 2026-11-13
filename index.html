@@ -71,10 +71,10 @@ button{cursor:pointer;border:none;background:none}
   border:1.5px solid var(--line);font-size:13px;font-weight:600;
   background:transparent;color:var(--mut);
 }
-.chip.c-green{background:transparent;color:color-mix(in srgb,var(--c-green) 55%,var(--mut));border-color:var(--line)}
-.chip.c-orange{background:transparent;color:color-mix(in srgb,var(--c-orange) 55%,var(--mut));border-color:var(--line)}
-.chip.c-blue{background:transparent;color:color-mix(in srgb,var(--c-blue) 55%,var(--mut));border-color:var(--line)}
-.chip.c-neutral{color:var(--mut)}
+.chip.c-green{background:transparent;color:color-mix(in srgb,var(--c-green) 85%,var(--mut));border-color:color-mix(in srgb,var(--c-green) 45%,var(--line))}
+.chip.c-orange{background:transparent;color:color-mix(in srgb,var(--c-orange) 85%,var(--mut));border-color:color-mix(in srgb,var(--c-orange) 45%,var(--line))}
+.chip.c-blue{background:transparent;color:color-mix(in srgb,var(--c-blue) 85%,var(--mut));border-color:color-mix(in srgb,var(--c-blue) 45%,var(--line))}
+.chip.c-neutral{color:var(--txt);border-color:color-mix(in srgb,var(--txt) 35%,var(--line))}
 .chip.on.c-green{background:var(--c-green);border-color:var(--c-green);color:#fff}
 .chip.on.c-orange{background:var(--c-orange);border-color:var(--c-orange);color:#fff}
 .chip.on.c-blue{background:var(--c-blue);border-color:var(--c-blue);color:#fff}
@@ -512,31 +512,37 @@ function render(){
     {negocios:"Panel del dueño de la app"}[view]||document.getElementById("subtitle").textContent;
 
   const main=document.getElementById("main");
-  if(view==="negocios")return renderNegocios(main);
-  if(view==="home")return renderHome(main);
-  if(view==="orders")return renderOrders(main);
-  if(view==="inventory")return renderInventory(main);
-  if(view==="clients")return renderClients(main);
-  if(view==="agenda")return renderAgenda(main);
-  if(view==="history")return renderHistory(main);
-  main.innerHTML=renderSettings(); wireSettings();
+  try{
+    if(view==="negocios")return renderNegocios(main);
+    if(view==="home")return renderHome(main);
+    if(view==="orders")return renderOrders(main);
+    if(view==="inventory")return renderInventory(main);
+    if(view==="clients")return renderClients(main);
+    if(view==="agenda")return renderAgenda(main);
+    if(view==="history")return renderHistory(main);
+    main.innerHTML=renderSettings(); wireSettings();
+  }catch(e){
+    console.error("render "+view, e);
+    main.innerHTML=`<div class="empty"><b>Algo falló al abrir esta sección</b>Probá cerrar y abrir la app.<br>${esc(e&&e.message||"")}</div>`;
+  }
 }
 
 /* ---------- Historial ---------- */
 function renderHistory(main){
-  const authors=[...new Set((db.log||[]).map(e=>e.who||userName(e.user)))];
+  const authors=[...new Set((db.log||[]).map(e=>e.who||userName(e.user)))].filter(Boolean);
   const chips=[["all","Todos"],...authors.map(a=>[a,a])];
   const list=(db.log||[]).filter(e=>logFilter==="all"||(e.who||userName(e.user))===logFilter).slice().reverse();
   main.innerHTML=`
     <div class="chips" style="margin:2px 0 12px">${chips.map(([k,l])=>`<button class="chip c-neutral ${logFilter===k?"on":""}" data-k="${esc(k)}">${esc(l)}</button>`).join("")}</div>
     ${list.length?list.map(e=>{
-      const m=LOG_META[e.action]||{ic:"•",l:e.action};
-      const d=new Date(e.ts);
-      const hh=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
-      const dtxt=(d.getDate()===new Date().getDate())?"Hoy":d.getDate()+" "+MESES[d.getMonth()].slice(0,3);
+      const m=LOG_META[e.action]||{ic:"•",l:e.action||"Movimiento"};
+      const d=new Date(e.ts||0);
+      const ok=d.getTime()>0;
+      const hh=ok?String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"):"";
+      const dtxt=ok?((d.getDate()===new Date().getDate())?"Hoy":d.getDate()+" "+MESES[d.getMonth()].slice(0,3)):"";
       return `<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${m.ic}</div>
-        <div style="flex:1;min-width:0"><h4 style="font-size:14px">${m.l}</h4><p>${esc(e.detail)}</p></div>
-        <div class="ev-date">${dtxt}<br>${hh} · <b style="color:var(--acc2)">${esc(e.who||userName(e.user))}</b></div></div>`;
+        <div style="flex:1;min-width:0"><h4 style="font-size:14px">${m.l}</h4><p>${esc(e.detail||"")}</p></div>
+        <div class="ev-date">${dtxt?dtxt+"<br>":""}${hh}${hh?" · ":""}<b style="color:var(--acc2)">${esc(e.who||userName(e.user))}</b></div></div>`;
     }).join(""):`<div class="empty"><b>Sin movimientos todavía</b>Cada pedido, producto o cambio<br>quedará registrado aquí con su autor.</div>`}`;
   main.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ logFilter=c.dataset.k; render(); });
 }
@@ -795,20 +801,20 @@ function renderAgenda(main){
   const nowDs=dstr(new Date());
   const past=allDates.filter(d=>d<nowDs).reverse();
   const future=allDates.filter(d=>d>=nowDs);
-  const dayRow=(ds)=>{
+  const dayRow=(ds,showDate)=>{
     return (ordersByDate[ds]||[]).map(o=>{
       const st=ST[o.estado]||ST.new;
       return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${st.c==="paid"?"green":st.c==="msg"?"orange":st.c==="due"?"blue":"yellow"})">
         ${orderStackHTML(o)}
         <div class="row1"><h3>${esc(o.cliente)}</h3><span class="total">${fmt(total(o))}</span></div>
-        <div class="badges"><span class="b ${st.c}">${st.l}</span></div></div>`;
+        <div class="badges"><span class="b ${st.c}">${st.l}</span>${showDate?`<span class="b new">📅 ${fdate(ds)}</span>`:""}</div></div>`;
     }).join("");
   };
   const hasToday=selDate&&!!(ordersByDate[selDate]&&ordersByDate[selDate].length);
   const listsHTML=`
     <div class="sect-title">Próximas entregas</div>
-    ${future.length?future.map(ds=>dayRow(ds)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
-    ${past.length?`<div class="sect-title">Pasadas</div>${past.map(ds=>dayRow(ds)).join("")}`:""}`;
+    ${future.length?future.map(ds=>dayRow(ds,true)).join(""):`<p style="font-size:13px;color:var(--mut);padding:4px 2px">Nada agendado a futuro.</p>`}
+    ${past.length?`<div class="sect-title">Pasadas</div>${past.map(ds=>dayRow(ds,true)).join("")}`:""}`;
   main.innerHTML=`
     <div class="cal">
       <div class="cal-head">
@@ -1286,9 +1292,11 @@ function demoBoot(){
     ],
     events:[],
     log:[
-      {t:Date.now()-86400000*2,tipo:"quota",d:"Lucía · cuota 1 de 3",who:"Dueña"},
-      {t:Date.now()-86400000*3,tipo:"order_new",d:"María Fernanda · $3.200",who:"Socia"},
-      {t:Date.now()-86400000*4,tipo:"inv_new",d:"Abrigo largo · $3.200"}
+      {ts:Date.now()-86400000*2,who:"Dueña",action:"quota",detail:"Lucía · cuota 1 de 3"},
+      {ts:Date.now()-86400000*3,who:"Socia",action:"order_new",detail:"María Fernanda · $3.200"},
+      {ts:Date.now()-86400000*4,who:"Dueña",action:"inv_new",detail:"Abrigo largo · $3.200"},
+      {ts:Date.now()-86400000*5,who:"Socia",action:"order_paid",detail:"María Fernanda · $3.200"},
+      {ts:Date.now()-86400000*6,who:"Dueña",action:"client_new",detail:"Lucía"}
     ],
     users:[{id:"me",name:"Demo",rol:"admin",email:"demo@ropa.app"}],
     usuarioId:"me",
