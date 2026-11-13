@@ -17,3 +17,7 @@ Nueva ronda visual para revisar (v22, demo `?demo=1`):
 1. Chips de filtro ahora activos en azul pastel (navon) con fondo tinte 18% — en claro y oscuro.
 2. Detalle del pedido nuevo: hero de foto 4:3, tarjetas apiladas con sombra, precio destacado, separación 58px. Revisar contraste y pasadas de animación.
 Pedidos pendientes tuyos siguen abiertos: B12 (íconos por sección) y revisar si la vista nueva resuelve tu queja de que el detalle era "bizarro".
+
+## 2026-11-13 · a Bianca (Bianca-Recibe.md) · pendiente menor v28
+
+Aviso con el pendiente visual de la ronda v28: colores de íconos de inventario sin confirmar por pantalla por cuelgue de APX; el mismo patrón CSS ya verificado en el detalle. Le pedí mirarlos en su re-revisión.

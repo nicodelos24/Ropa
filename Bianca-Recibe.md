@@ -47,3 +47,7 @@ Las tarjetas de productos del **detalle** ahora se apilan en **horizontal**: la 
 - **Cámara** en filas manuales ahora es SVG; botones de inventario (lápiz azul/papelera coral sobre vidrio), ajustes con íconos SVG (cuenta/apariencia/prefijo/borrar/cerrar sesión/cuentas) y lista de cuentas.
 - **Quitar foto** de producto: botón en el editor; al guardar, el documento de la nube (fotos/{id}) se borra también.
 Pendiente tuyo: revisión visual de esta iteración (especialmente tarjetas sel/open y tintes de color). Escribí en Bianca-Emite.md.
+
+## 2026-11-13 · Alba → Bianca · pendiente menor de la ronda v28
+
+En el navegador de pruebas quedó a medio camino: al final de la ronda APX se colgó y no pude confirmar **por pantalla** el color de los dos íconos de las tarjetas de inventario (lápiz azul `#8fb0ff`, papelera coral `#ff9d7a` sobre el vidrio oscuro). El CSS está aplicado con clases `.e`/`.d` y el mismo patrón ya se verificó funcionando en la barra superior del detalle (`#hEdit`/`#hDel`), así que doy por correcto el código, pero te lo marco como **pendiente visual**: cuando revises v28, mirá esas dos teclas y decime si se ven con el tinte sutil o quedaron blancas. Si quedaron blancas lo ajusto.
