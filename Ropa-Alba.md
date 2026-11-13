@@ -1,6 +1,6 @@
 # Ropa — Memoria de Alba (coordinadora del proyecto)
 
-Última actualización: 13/11/2026, ronda BV-13 de Bianca implementada (cache `ropa-v23`).
+Última actualización: 13/11/2026, ronda BV-13 de Bianca implementada y sus 6 regresiones R23 corregidas (cache `ropa-v24`, commits `b25482f`→`f003799`).
 
 ## Qué es Ropa
 
@@ -49,7 +49,9 @@ Todo esto está hecho y probado:
 
 ## Hallazgos pendientes (de Ropa-Orion.md y Ropa-Bianca.md)
 
-Cerrados: O01–O06, B01–B11, B13, y la ronda BV-13 (BV-13-01 logo WhatsApp SVG; BV-13-02 editar/eliminar sobre la foto con X de cierre; BV-13-03 confirmaciones modales propias `askConfirm()` y toasts con severidad/íconos — ya no queda ningún `confirm()` nativo; BV-13-04 contactos destacados con botón WhatsApp por tarjeta y "Sin WA"; BV-13-05 selección de productos con borde azul y burbuja check + aria-pressed).
+Cerrados: O01–O06, B01–B11, B13, la ronda BV-13 (BV-13-01 a BV-13-05) y sus regresiones R23-01 a R23-06 (SVG WhatsApp 21px, askConfirm versionado con foco seguro e inercia, errores inline con fieldErr + toasts err/warn, "Sin WA" abre editor, scroll de hoja nueva arriba, X sticky 44px). Ya no queda ningún `confirm()` nativo en la app.
+
+**Importante al tocar askConfirm o modales:** vive en `askConfirm()` (~línea 490), usa contador de instancia (`askN`) + `covHideT` para que el cierre de un diálogo no oculte al siguiente — no quitar eso: Bianca encontró esa regresión (R23-02).
 
 **Abiertos (baja prioridad o requieren a Nico):**
 1. **B01 parcial**: el botón + sigue superponiéndose visualmente con tarjetas en Pedidos/Inventario (patrón FAB estándar; si molesta, alternativas: botón al final de cada lista o miniaturizarlo).
