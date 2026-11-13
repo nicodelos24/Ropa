@@ -31,10 +31,11 @@ html[data-theme="light"] .fab{
   box-shadow:0 6px 24px rgba(20,194,174,.45);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
+html{height:100%}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   background:var(--bg); color:var(--txt);
+  min-height:100%;
   padding-bottom:calc(170px + env(safe-area-inset-bottom));
   overscroll-behavior-y:none;
   transition:background .2s;
@@ -79,6 +80,7 @@ button{cursor:pointer;border:none;background:none}
 .chip.on.c-blue{background:var(--c-blue);border-color:var(--c-blue);color:#fff}
 .chip.on.c-neutral{background:var(--acc);border-color:var(--acc);color:#fff}
 main{padding:14px 14px 0}
+#main::after{content:"";display:block;height:150px}
 .o{
   background:var(--card);border:1px solid var(--line);border-left:5px solid var(--mut);
   border-radius:var(--r);padding:14px;margin-bottom:10px;
@@ -694,15 +696,19 @@ function openInvEditor(it){
   };
 }
 function compressPhoto(file, cb){
-  const img=new Image(), r=new FileReader();
-  r.onload=()=>{ img.onload=()=>{
-    const MAX=480, sc=Math.min(1, MAX/Math.max(img.width,img.height));
-    const c=document.createElement("canvas");
-    c.width=img.width*sc; c.height=img.height*sc;
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-    cb(c.toDataURL("image/jpeg",.72));
-  }; img.src=r.result; };
-  r.readAsDataURL(file);
+  const img=new Image(), url=URL.createObjectURL(file);
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    try{
+      const MAX=480, sc=Math.min(1, MAX/Math.max(img.width,img.height));
+      const c=document.createElement("canvas");
+      c.width=img.width*sc; c.height=img.height*sc;
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      cb(c.toDataURL("image/jpeg",.72));
+    }catch(e){ toast("No se pudo procesar la foto"); }
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); toast("No se pudo abrir la foto"); };
+  img.src=url;
 }
 
 /* ---------- Clientes ---------- */
@@ -1170,6 +1176,7 @@ fsdb.settings({experimentalForceLongPolling:true});
 fsdb.enablePersistence().catch(()=>{});
 const GOOGLE_ON=false;
 let FB={uid:null,perfil:null,unsub:null,unorg:null,migrate:null,pend:false,pendName:null};
+if(/[?&]demo=1/.test(location.search))demoBoot();
 function fbClean(d){ return JSON.parse(JSON.stringify(d,(k,v)=>v===undefined?null:v)); }
 function subscribe(){
   if(FB.unsub){FB.unsub();FB.unsub=null;}
@@ -1218,7 +1225,7 @@ function subscribe(){
   render();
 }
 function pushNow(){
-  if(!FB.perfil||!FB.perfil.negocioId)return;
+  if(!FB.perfil||FB.perfil.demo||!FB.perfil.negocioId)return;
   const ref=fsdb.collection("negocios").doc(FB.perfil.negocioId);
   const payload=fbClean({
     orders:db.orders,clients:db.clients,events:db.events,log:db.log,users:db.users,
@@ -1253,7 +1260,48 @@ auth.getRedirectResult().catch(e=>{
   FB.gerr="GOOGLE: "+(e.code||"")+" "+e.message;
   if(!FB.uid){ FB.perfil=null; render(); }
 });
+/* ---------- modo demo para pruebas (?demo=1) ---------- */
+function demoBoot(){
+  const hoy=new Date(), d=n=>{const x=new Date(hoy);x.setDate(x.getDate()+n);return dstr(x);};
+  db={
+    orders:[
+      {id:"d1",created:Date.now()-86400000*9,cliente:"Rosita",tel:"099111222",items:[{name:"Vestido floral",price:1200,qty:1}],estado:"new",cuotas:2,cuotasPagadas:0,notas:"",fecha:d(2)},
+      {id:"d2",created:Date.now()-86400000*6,cliente:"Paco",tel:"098765432",items:[{name:"Camisa blanca",price:950,qty:1},{name:"Corbata",price:300,qty:1}],estado:"msg",cuotas:2,cuotasPagadas:0,notas:"Entregar en el trabajo",fecha:d(4)},
+      {id:"d3",created:Date.now()-86400000*4,cliente:"Lucía",tel:"099000111",items:[{name:"Pantalón negro",price:1400,qty:1}],estado:"due",cuotas:3,cuotasPagadas:1,notas:"",fecha:d(7)},
+      {id:"d4",created:Date.now()-86400000*15,cliente:"Rosita",tel:"099111222",items:[{name:"Medias lanas",price:250,qty:2}],estado:"paid",cuotas:2,cuotasPagadas:2,notas:"",fecha:""},
+      {id:"d5",created:Date.now()-86400000*2,cliente:"María Fernanda",tel:"",items:[{name:"Abrigo largo",price:3200,qty:1}],estado:"due",cuotas:2,cuotasPagadas:2,notas:"Pagó todo junto",fecha:d(1)}
+    ],
+    inventory:[
+      {id:"di1",name:"Vestido floral",price:1200,cat:"vestido",photo:null},
+      {id:"di2",name:"Camisa blanca",price:950,cat:"camisa",photo:null},
+      {id:"di3",name:"Pantalón negro",price:1400,cat:"pantalon",photo:null},
+      {id:"di4",name:"Abrigo largo",price:3200,cat:"abrigo",photo:null},
+      {id:"di5",name:"Medias lanas",price:250,cat:"media",photo:null}
+    ],
+    clients:[
+      {id:"dc1",name:"Rosita",tel:"099111222"},
+      {id:"dc2",name:"Paco",tel:"098765432"},
+      {id:"dc3",name:"Lucía",tel:"099000111"},
+      {id:"dc4",name:"María Fernanda",tel:""}
+    ],
+    events:[],
+    log:[
+      {t:Date.now()-86400000*2,tipo:"quota",d:"Lucía · cuota 1 de 3",who:"Dueña"},
+      {t:Date.now()-86400000*3,tipo:"order_new",d:"María Fernanda · $3.200",who:"Socia"},
+      {t:Date.now()-86400000*4,tipo:"inv_new",d:"Abrigo largo · $3.200"}
+    ],
+    users:[{id:"me",name:"Demo",rol:"admin",email:"demo@ropa.app"}],
+    usuarioId:"me",
+    prefijo:"+598",theme:localStorage.getItem("ropa_theme")||"dark"
+  };
+  FB.uid="demo";
+  FB.perfil={rol:"admin",negocioId:null,nombre:"Demo",email:"demo@ropa.app",demo:true};
+  save(); render();
+}
+const DEMO=/[?&]demo=1/.test(location.search);
+
 auth.onAuthStateChanged(async u=>{
+  if(DEMO)return;
   FB.uid=u?u.uid:null;
   if(!u){ FB.perfil=null;FB.pend=false;FB.pendName=null; if(FB.unsub){FB.unsub();FB.unsub=null;} if(FB.unorg){FB.unorg();FB.unorg=null;} render(); return; }
   try{
