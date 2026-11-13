@@ -228,10 +228,48 @@ nav button.on{color:var(--navon)}
 .sett-card p{font-size:13px;color:var(--mut);line-height:1.5}
 .toast{
   position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom));
-  background:var(--card2);border:1px solid var(--line);padding:11px 20px;border-radius:999px;
-  font-size:14px;z-index:60;opacity:0;transition:.3s;pointer-events:none;color:var(--txt);
+  background:var(--card2);border:1px solid var(--line);padding:11px 18px;border-radius:16px;
+  font-size:14px;z-index:90;opacity:0;transition:.28s;pointer-events:none;color:var(--txt);
+  max-width:min(92vw,420px);display:flex;align-items:center;gap:9px;line-height:1.45;
 }
-.toast.show{opacity:1}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.toast svg{width:18px;height:18px;flex-shrink:0}
+.toast.ok svg{color:var(--c-green)}
+.toast.err svg{color:var(--c-orange)}
+.toast.warn svg{color:var(--c-orange)}
+.cov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .18s}
+.cov.open{opacity:1}
+.cbox{
+  background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px 16px;
+  max-width:340px;width:100%;box-shadow:0 18px 50px rgba(0,0,0,.35);
+  transform:translateY(10px) scale(.97);transition:transform .18s cubic-bezier(.2,.8,.3,1);
+}
+.cov.open .cbox{transform:none}
+.cbox .cic{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.cbox .cic svg{width:22px;height:22px}
+.cbox .cic.danger{background:color-mix(in srgb,var(--c-orange) 16%,transparent);color:var(--c-orange)}
+.cbox .cic.info{background:color-mix(in srgb,var(--navon) 16%,transparent);color:var(--navon)}
+.cbox h3{font-size:17px;margin-bottom:6px}
+.cbox p{font-size:13.5px;color:var(--mut);line-height:1.55}
+.cbox .crow{display:flex;gap:8px;margin-top:16px}
+.cbox .crow button{flex:1;padding:12px;border-radius:13px;font-size:14px;font-weight:600;cursor:pointer}
+.cbtn-no{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.cbtn-yes{background:var(--c-orange);color:#3d2500;border:none}
+.cbtn-yes.neutral{background:var(--navon);color:#06203f}
+.hero-wrap{position:relative;border-radius:18px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}
+.hero-wrap img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--card2)}
+.hero-wrap.hero-none{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;background:var(--card2)}
+.hero-wrap.hero-none .ph{font-size:40px;opacity:.35}
+.hacts{position:absolute;top:10px;right:10px;display:flex;gap:8px}
+.hacts button{
+  width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(15,20,28,.55);backdrop-filter:blur(6px);color:#fff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.hacts button svg{width:20px;height:20px}
+.dclose{display:flex;justify-content:flex-end;padding:4px 2px 0}
+.dclose button{width:40px;height:40px;border-radius:13px;background:var(--card2);color:var(--mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dclose button svg{width:18px;height:18px}
 .danger{color:var(--c-red)!important}
 /* pantalla de cuenta */
 #auth{position:fixed;inset:0;z-index:80;background:var(--bg);overflow-y:auto;padding:24px 20px calc(30px + env(safe-area-inset-bottom))}
@@ -262,6 +300,13 @@ nav button.on{color:var(--navon)}
 .cli-id{display:flex;gap:10px;align-items:center;min-width:0}
 .cli-id h3{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cli-id p{font-size:12px;color:var(--mut)}
+.cli-wa{
+  width:44px;height:44px;border-radius:50%;flex-shrink:0;border:1.5px solid color-mix(in srgb,var(--c-green) 55%,var(--line));
+  background:color-mix(in srgb,var(--c-green) 14%,var(--card));color:#1e9e57;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.cli-wa svg{width:21px;height:21px}
+.cli-wa.none{border-style:dashed;color:var(--mut);background:transparent;font-size:9.5px;font-weight:700;text-align:center;line-height:1.15;padding:2px}
 /* agenda */
 .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
 .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -304,8 +349,15 @@ nav button.on{color:var(--navon)}
 .hcard.wide b{margin:0;font-size:17px}
 .hlink{width:100%;text-align:center;padding:10px;border:1px dashed var(--line);border-radius:12px;color:var(--acc2);font-size:13px;margin-top:10px}
 .invpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.invpick button{background:var(--card2);border:1.5px solid var(--line);border-radius:12px;padding:8px 6px;text-align:left}
-.invpick button.on{border-color:var(--acc)}
+.invpick button{position:relative;background:var(--card2);border:1.5px solid var(--line);border-radius:12px;padding:8px 6px;text-align:left}
+.invpick button.on{border-color:var(--navon);box-shadow:inset 0 0 0 1px var(--navon),0 0 0 2px color-mix(in srgb,var(--navon) 35%,transparent);background:color-mix(in srgb,var(--navon) 8%,var(--card2))}
+.pickcheck{
+  position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:999px;
+  background:var(--navon);color:#0a1f3d;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s;pointer-events:none;
+}
+.pickcheck svg{width:14px;height:14px;stroke-width:2.6}
+.invpick button.on .pickcheck{opacity:1;transform:scale(1)}
 .invpick h5{font-size:12px;line-height:1.3}
 .invpick p{font-size:11px;color:var(--acc2);margin-top:2px}
 .invpick .thumb{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;margin-bottom:5px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:22px}
@@ -343,7 +395,7 @@ nav button.on{color:var(--navon)}
   <button data-v="inventory">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v9"/></svg>Inventario</button>
   <button data-v="clients">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M17 8.5a3 3 0 1 1 .5 5.9M17.5 14.5c2.6.3 4 2 4 4.5"/></svg>Clientes</button>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M17 8.5a3 3 0 1 1 .5 5.9M17.5 14.5c2.6.3 4 2 4 4.5"/></svg>Contactos</button>
   <button data-v="history">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/><path d="M12 8v4l3 2"/></svg>Historial</button>
   <button data-v="settings">
@@ -351,7 +403,18 @@ nav button.on{color:var(--navon)}
 </nav>
 
 <div class="sheet" id="sheet"><div class="sheet-in" id="sheet-in"></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="cov" id="cov" style="display:none">
+  <div class="cbox" role="alertdialog" aria-modal="true" aria-labelledby="cv-t" aria-describedby="cv-p" id="cbox">
+    <div class="cic" id="cv-ic"></div>
+    <h3 id="cv-t"></h3>
+    <p id="cv-p"></p>
+    <div class="crow">
+      <button class="cbtn-no" id="cv-no">Cancelar</button>
+      <button class="cbtn-yes" id="cv-yes">Aceptar</button>
+    </div>
+  </div>
+</div>
 <div id="auth" style="display:none"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -379,6 +442,11 @@ const ICON={
   moon:SVG(`<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>`),
   sun:SVG(`<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M19.2 4.8l-1.8 1.8M6.6 17.4l-1.8 1.8"/>`),
   wrench:SVG(`<path d="M14.5 6.5a4.5 4.5 0 1 0 3 3L21 6l-3-3-3.5 3.5z"/><path d="M12.8 8.2 4 17v3h3l8.8-8.8"/>`),
+  wa:`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.05 2.25c-5.4 0-9.78 4.38-9.78 9.78 0 1.72.45 3.34 1.24 4.74L2.25 21.5l4.85-1.27a9.74 9.74 0 0 0 4.95 1.35c5.4 0 9.78-4.38 9.78-9.78s-4.38-9.55-9.78-9.55zm0 17.84c-1.6 0-3.1-.48-4.36-1.3l-.31-.19-3.24.85.86-3.16-.2-.33a8.06 8.06 0 0 1-1.24-4.32c0-4.48 3.65-8.12 8.12-8.12 4.48 0 8.12 3.64 8.12 8.12 0 4.48-3.64 8.45-8.12 8.45z"/><path d="M15.1 13.9c-.15-.08-.9-.45-1.05-.5-.14-.05-.24-.08-.35.07-.1.16-.4.5-.5.6-.09.1-.18.12-.33.04-.15-.07-.63-.23-1.2-.74-.44-.4-.74-.88-.83-1.03-.09-.15-.01-.23.06-.31.07-.07.15-.18.22-.27.08-.09.1-.15.15-.25.05-.1.03-.19-.02-.27-.05-.07-.35-.85-.48-1.16-.13-.31-.26-.27-.35-.27h-.3c-.1 0-.27.04-.4.19-.14.16-.53.52-.53 1.26 0 .74.54 1.46.62 1.56.07.1 1.06 1.62 2.56 2.27.36.16.64.25.85.32.36.11.69.1.95.06.29-.05.9-.37 1.02-.72.13-.36.13-.66.09-.72-.04-.07-.14-.1-.28-.17z"/></svg>`,
+  pencil:SVG(`<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/>`),
+  trash:SVG(`<path d="M4 7h16M9.5 4h5M6.5 7l.9 13h9.2l.9-13M10 11v5.5M14 11v5.5"/>`),
+  x:SVG(`<path d="M6 6l12 12M18 6L6 18"/>`),
+  alert:SVG(`<path d="M12 3.5 21.5 20h-19L12 3.5z"/><path d="M12 10v4.5M12 17.2v.3"/>`),
 };
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const DOW=["D","L","M","M","J","V","S"];
@@ -409,7 +477,41 @@ function load(){
 function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
 function fmt(n){ return "$"+Number(n||0).toLocaleString("es-MX"); }
 function total(o){ return (o.items||[]).reduce((s,i)=>s+(Number(i.price)||0)*(Number(i.qty)||1),0); }
-function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800); }
+let toastT=null;
+function toast(m,type){
+  const t=document.getElementById("toast");
+  clearTimeout(toastT);
+  t.className="toast show "+(type||"ok");
+  t.innerHTML=`${(type==="err"||type==="warn")?ICON.alert:ICON.check}<span>${esc(m)}</span>`;
+  toastT=setTimeout(()=>t.classList.remove("show"),(type==="err"||type==="warn")?4200:3000);
+}
+function askConfirm(o){
+  return new Promise(res=>{
+    const cov=document.getElementById("cov"),box=document.getElementById("cbox");
+    const danger=o.danger===undefined?true:!!o.danger;
+    document.getElementById("cv-ic").className="cic "+(danger?"danger":"info");
+    document.getElementById("cv-ic").innerHTML=ICON.alert;
+    document.getElementById("cv-t").textContent=o.title;
+    document.getElementById("cv-p").textContent=o.msg||"";
+    const yes=document.getElementById("cv-yes"),no=document.getElementById("cv-no");
+    yes.textContent=o.ok||"Aceptar";
+    yes.className="cbtn-yes"+(danger?"":" neutral");
+    cov.style.display="flex";requestAnimationFrame(()=>cov.classList.add("open"));
+    const done=v=>{
+      cov.classList.remove("open");
+      setTimeout(()=>cov.style.display="none",180);
+      document.removeEventListener("keydown",onKey);
+      no.onclick=yes.onclick=cov.onclick=null;
+      res(v);
+    };
+    no.onclick=()=>done(false);
+    yes.onclick=()=>done(true);
+    cov.onclick=e=>{ if(e.target===cov)done(false); };
+    const onKey=e=>{ if(e.key==="Escape")done(false); };
+    document.addEventListener("keydown",onKey);
+    (o.focusNo?no:yes).focus();
+  });
+}
 function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function uid(p){ return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function dstr(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
@@ -513,7 +615,7 @@ function render(){
   const pend=db.orders.filter(o=>o.estado!=="paid");
   const sum=a=>a.reduce((s,x)=>s+total(x),0);
   document.getElementById("subtitle").textContent=
-    {home:"Todo tu negocio en un vistazo",agenda:"Tu agenda",orders:"Catálogo de ventas",inventory:"Inventario de productos",clients:"Tus clientes",history:"Movimientos de cada cuenta",settings:"Configuración"}[view];
+    {home:"Todo tu negocio en un vistazo",agenda:"Tu agenda",orders:"Catálogo de ventas",inventory:"Inventario de productos",clients:"Tus contactos",history:"Movimientos de cada cuenta",settings:"Configuración"}[view];
   document.getElementById("stats").innerHTML =
     (view==="home")?``
     :(view==="orders")
@@ -668,10 +770,10 @@ function renderInventory(main){
         <button data-act="del" data-id="${i.id}">Eliminar</button>
       </div>
     </div>`).join("")+`</div>`;
-  main.querySelectorAll(".inv-actions button").forEach(b=>b.onclick=()=>{
+  main.querySelectorAll(".inv-actions button").forEach(b=>b.onclick=async()=>{
     const it=db.inventory.find(x=>x.id===b.dataset.id);
     if(b.dataset.act==="del"){
-      if(!confirm("¿Eliminar este producto del inventario?"))return;
+      if(!(await askConfirm({title:"¿Eliminar este producto?",msg:"Se quita del inventario. Los pedidos ya guardados no cambian.",ok:"Eliminar producto"})))return;
       log("inv_del",it.name);
       db.inventory=db.inventory.filter(x=>x.id!==b.dataset.id); save(); render(); toast("Producto eliminado");
     }else openInvEditor(it);
@@ -750,10 +852,16 @@ function renderClients(main){
     const pend=ords.filter(o=>o.estado!=="paid").length;
     return `<div class="cli" data-id="${c.id}">
       <div class="row1"><div class="cli-id"><div class="avatar">${esc((c.name||"?")[0].toUpperCase())}</div>
-      <div style="min-width:0"><h3>${esc(c.name)}</h3><p>${ords.length} pedido${ords.length!==1?"s":""}${pend?` · ${pend} pendiente${pend!==1?"s":""}`:" · al día"}${c.tel?`<br>📞 ${esc(fmtTel(c.tel))}`:""}</p></div></div></div>
+      <div style="min-width:0"><h3>${esc(c.name)}</h3><p>${ords.length} pedido${ords.length!==1?"s":""}${pend?` · ${pend} pendiente${pend!==1?"s":""}`:" · al día"}${c.tel?`<br>📞 ${esc(fmtTel(c.tel))}`:""}</p></div></div>
+      <button class="cli-wa ${c.tel?"":"none"}" aria-label="${c.tel?"Escribir por WhatsApp a "+esc(c.name):"Sin WhatsApp: editá el contacto para agregarlo"}">${c.tel?ICON.wa:"Sin<br>WA"}</button></div>
     </div>`;
   }).join("");
-  main.querySelectorAll(".cli").forEach(el=>el.onclick=()=>openClient(el.dataset.id));
+  main.querySelectorAll(".cli").forEach(el=>{
+    el.onclick=()=>openClient(el.dataset.id);
+    const w=el.querySelector(".cli-wa");
+    const c=db.clients.find(x=>x.id===el.dataset.id);
+    w.onclick=e=>{ e.stopPropagation(); if(c&&c.tel)window.open(`https://wa.me/${waTel(c.tel)}`,"_blank"); };
+  });
 }
 function openClient(id){
   const c=db.clients.find(x=>x.id===id); if(!c)return;
@@ -764,7 +872,7 @@ function openClient(id){
       <div><h2>${esc(c.name)}</h2><p style="font-size:13px;color:var(--mut)">${c.tel?esc(fmtTel(c.tel)):"Sin teléfono"}</p></div>
     </div>
     <button class="ghost" id="cli-edit" style="margin-top:12px">✏️ Editar datos del cliente</button>
-    ${c.tel?`<button class="big wa" id="cli-wa" style="margin-top:10px">💬 Escribir por WhatsApp</button>`:""}
+    ${c.tel?`<button class="big wa" id="cli-wa" style="margin-top:10px">${ICON.wa} Escribir por WhatsApp</button>`:""}
     <div class="sect-title">Pedidos (${ords.length})</div>
     ${ords.length?ords.map(o=>{
       const st=ST[o.estado]||ST.new;
@@ -791,8 +899,8 @@ function openClient(id){
       log("client_edit",c.name);
       save(); openClient(c.id); toast("Cliente actualizado ✓");
     };
-    document.getElementById("ce-del").onclick=()=>{
-      if(!confirm("¿Eliminar cliente? Sus pedidos se conservan."))return;
+    document.getElementById("ce-del").onclick=async()=>{
+      if(!(await askConfirm({title:"¿Eliminar cliente?",msg:"Sus pedidos se conservan.",ok:"Eliminar cliente"})))return;
       log("client_del",c.name);
       db.clients=db.clients.filter(x=>x.id!==c.id);
       save(); closeSheet(); toast("Cliente eliminado");
@@ -875,7 +983,8 @@ function openEditor(orig, presetClient, presetDate){
     const items=db.inventory.slice(0,60);
     if(!items.length)return`<p style="font-size:13px;color:var(--mut)">Tu inventario está vacío. Agrega productos en la pestaña Inventario.</p>`;
     return `<div class="invpick">`+items.map(i=>`
-      <button data-iid="${i.id}" class="${sel.includes(i.id)?"on":""}">
+      <button data-iid="${i.id}" aria-pressed="${sel.includes(i.id)}" class="${sel.includes(i.id)?"on":""}">
+        <span class="pickcheck">${ICON.check}</span>
         ${i.photo?`<img class="thumb" src="${esc(i.photo)}">`:`<div class="thumb">${CAT_ICON[i.cat]||"👗"}</div>`}
         <h5>${esc(i.name)}</h5><p>${fmt(i.price)}</p></button>`).join("")+`</div>`;
   };
@@ -1072,19 +1181,24 @@ function openOrder(id){
     </div>`).join("");
   openSheet(`<div class="detail">
     <div class="grab"></div>
+    <div class="dclose"><button aria-label="Cerrar detalle" onclick="closeSheet()">${ICON.x}</button></div>
     ${orderStackHTML(o)}
     <h2>${esc(o.cliente)||"Cliente"}</h2>
     <div class="badges" style="margin-top:8px"><span class="b ${st.c}">${st.l}</span></div>
-    ${hero?`<img class="hero" src="${esc(hero.photo)}" alt="${esc(hero.name)}">`:""}
+    <div class="hero-wrap ${hero?"":"hero-none"}">
+      ${hero?`<img class="hero" src="${esc(hero.photo)}" alt="${esc(hero.name)}">`:`<div class="ph">🛍️</div>`}
+      <div class="hacts">
+        <button id="hEdit" aria-label="Editar pedido">${ICON.pencil}</button>
+        <button id="hDel" aria-label="Eliminar pedido">${ICON.trash}</button>
+      </div>
+    </div>
     ${items.length?`<div class="dstack" id="dstack">${dcards}</div>${items.length>1?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para traerla adelante</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
     <div class="totalbar"><span>Total</span><b>${fmt(total(o))}</b></div>
     ${o.estado==="due"?`<div style="margin-top:14px;display:flex;gap:8px">
       <button class="ghost" style="margin:0" id="cq-minus">− Cuota</button>
       <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px">Pagó ${Number(o.cuotasPagadas)||0} de ${o.cuotas||2}</div>
       <button class="ghost" style="margin:0" id="cq-plus">+ Cuota</button></div>`:""}
-    ${o.tel?`<button class="big wa" id="waBtn">💬 Escribir por WhatsApp</button>`:""}
-    <button class="big" id="editBtn">Editar pedido</button>
-    <button class="ghost danger" id="delBtn">Eliminar pedido</button>
+    ${o.tel?`<button class="big wa" id="waBtn">${ICON.wa} Escribir por WhatsApp</button>`:""}
     <button class="ghost" onclick="closeSheet()">Cerrar</button>
   </div>`);
   const dstack=document.getElementById("dstack");
@@ -1095,9 +1209,9 @@ function openOrder(id){
     relayout();
     [...dstack.children].forEach(c=>c.onclick=()=>{dstack.appendChild(c);relayout();});
   }
-  document.getElementById("editBtn").onclick=()=>openEditor(o);
-  document.getElementById("delBtn").onclick=()=>{
-    if(!confirm("¿Eliminar este pedido?"))return;
+  document.getElementById("hEdit").onclick=()=>openEditor(o);
+  document.getElementById("hDel").onclick=async()=>{
+    if(!(await askConfirm({title:"¿Eliminar este pedido?",msg:`El pedido de ${o.cliente||"este cliente"} se quita de la lista. El inventario no cambia.`,ok:"Eliminar pedido"})))return;
     log("order_del",`${o.cliente} · ${fmt(total(o))}`);
     db.orders=db.orders.filter(x=>x.id!==id); save(); closeSheet(); toast("Pedido eliminado");
   };
@@ -1163,7 +1277,7 @@ function wireSettings(){
   if(cu)cu.onclick=()=>openCuentas();
   const ng=document.getElementById("ng-open");
   if(ng)ng.onclick=()=>{ view="negocios"; render(); };
-  document.getElementById("outBtn").onclick=()=>{ if(confirm("¿Cerrar sesión?"))logout(); };
+  document.getElementById("outBtn").onclick=async()=>{ if(await askConfirm({title:"¿Cerrar sesión?",msg:"Vas a salir de tu cuenta en este dispositivo.",ok:"Cerrar sesión",danger:false}))logout(); };
   document.getElementById("prefijo-save").onclick=()=>{
     let v=document.getElementById("prefijo-in").value.trim();
     if(v&&!v.startsWith("+"))v="+"+v.replace(/\D/g,"");
@@ -1182,10 +1296,10 @@ function wireSettings(){
     a.click(); toast("Respaldo descargado ✓");
   };
   document.getElementById("impBtn").onclick=()=>document.getElementById("impFile").click();
-  document.getElementById("impFile").onchange=e=>{
+  document.getElementById("impFile").onchange=async e=>{
     const f=e.target.files[0]; if(!f)return;
     const r=new FileReader();
-    r.onload=()=>{ try{
+    r.onload=async()=>{ try{
         const d=JSON.parse(r.result);
         const arr=v=>Array.isArray(v)?v.filter(x=>x&&typeof x==="object"&&!Array.isArray(x)):[];
         if(!Array.isArray(d.orders))throw 0;
@@ -1194,15 +1308,19 @@ function wireSettings(){
           events:arr(d.events),log:arr(d.log),users:arr(d.users)
         };
         if(!clean.orders.length&&!clean.inventory.length&&!clean.clients.length)throw 0;
+        const ok=await askConfirm({title:"¿Reemplazar tus datos con este respaldo?",
+          msg:`Contiene ${clean.orders.length} pedido${clean.orders.length!==1?"s":""}, ${clean.inventory.length} producto${clean.inventory.length!==1?"s":""} y ${clean.clients.length} cliente${clean.clients.length!==1?"s":""}. Los datos actuales se reemplazan.`,
+          ok:"Importar"});
+        if(!ok)return;
         db=Object.assign({theme:db.theme,prefijo:db.prefijo,usuarioId:db.usuarioId},d,clean);
         log("backup","Respaldo importado");
         save(); toast("Respaldo importado ✓"); view="orders"; render();
       }catch(err){ toast("Archivo no válido"); render(); } };
     r.readAsText(f);
   };
-  document.getElementById("resetBtn").onclick=()=>{
-    if(!confirm("¿Seguro que quieres borrar TODO?"))return;
-    if(!confirm("Última confirmación: no se puede deshacer."))return;
+  document.getElementById("resetBtn").onclick=async()=>{
+    if(!(await askConfirm({title:"¿Borrar todos los datos?",msg:"Se borran pedidos, inventario, clientes y agenda de este dispositivo. Tu cuenta no se borra.",ok:"Borrar todo"})))return;
+    if(!(await askConfirm({title:"Última confirmación",msg:"No se puede deshacer. ¿Seguro que querés borrar todo?",ok:"Sí, borrar todo"})))return;
     db={orders:[],inventory:[],clients:[],events:[],theme:db.theme,prefijo:db.prefijo,users:db.users,usuarioId:db.usuarioId,log:db.log}; save(); toast("Todo borrado"); view="home"; render();
   };
 }
@@ -1619,7 +1737,7 @@ function openCuentas(){
     q.docs.forEach(d=>{
       const b=document.getElementById("cu-del-"+d.id);
       if(b)b.onclick=async()=>{
-        if(!confirm("¿Quitar la cuenta de "+d.data().nombre+"? Ya no podrá entrar."))return;
+        if(!(await askConfirm({title:"¿Quitar esta cuenta?",msg:d.data().nombre+" ya no podrá entrar.",ok:"Quitar cuenta"})))return;
         await fsdb.collection("usuarios").doc(d.id).delete();
         toast("Cuenta quitada");
       };

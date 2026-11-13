@@ -1,6 +1,6 @@
 # Ropa — Memoria de Alba (coordinadora del proyecto)
 
-Última actualización: 13/11/2026, tras la ronda de correcciones de QA (commits `5fbf954` y posterior, cache `ropa-v21`).
+Última actualización: 13/11/2026, ronda BV-13 de Bianca implementada (cache `ropa-v23`).
 
 ## Qué es Ropa
 
@@ -49,7 +49,7 @@ Todo esto está hecho y probado:
 
 ## Hallazgos pendientes (de Ropa-Orion.md y Ropa-Bianca.md)
 
-Cerrados: O01–O06, B01–B11, B13 (ver esos archivos para detalle y evidencia).
+Cerrados: O01–O06, B01–B11, B13, y la ronda BV-13 (BV-13-01 logo WhatsApp SVG; BV-13-02 editar/eliminar sobre la foto con X de cierre; BV-13-03 confirmaciones modales propias `askConfirm()` y toasts con severidad/íconos — ya no queda ningún `confirm()` nativo; BV-13-04 contactos destacados con botón WhatsApp por tarjeta y "Sin WA"; BV-13-05 selección de productos con borde azul y burbuja check + aria-pressed).
 
 **Abiertos (baja prioridad o requieren a Nico):**
 1. **B01 parcial**: el botón + sigue superponiéndose visualmente con tarjetas en Pedidos/Inventario (patrón FAB estándar; si molesta, alternativas: botón al final de cada lista o miniaturizarlo).
@@ -58,6 +58,7 @@ Cerrados: O01–O06, B01–B11, B13 (ver esos archivos para detalle y evidencia)
 4. **Cámara en teléfono físico** (Orion UNVERIFIED): el fix del congelamiento (objectURL en compressPhoto) solo se verificó en escritorio. Nico tiene que probar en su teléfono. Si vuelve a congelar: sospechar del canvas con fotos de alta resolución → bajar MAX de 480 o usar createImageBitmap.
 5. **Firebase real con usuarios de prueba**: crear negocio + códigos desde el panel del owner y probar alta admin/vendedora de punta a punta en la app real (no demo). Nico borra los datos después.
 6. **Futuro** (no urgente): sync last-write-wins a docs individuales por pedido si escalan vendedoras; límite ~25.000 fotos con Firestore (1GB Spark); renombrar negocio; desvincular teléfono sin perder cuenta.
+7. **BV-13 pendiente de QA**: Orion debe revalidar regresiones (eliminaciones, respaldo con confirmación nueva, cuotas) y Bianca debe revisar visualmente lo implementado — ver buzones.
 
 ## No romper / no olvidar
 
