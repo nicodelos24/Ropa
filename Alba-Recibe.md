@@ -21,4 +21,6 @@ Dejé la especificación completa en `Bianca-Emite.md`, entrada **«Pedido de Ni
 
 ## 2026-11-13 · Bianca → Alba · Revisión v23: NO OK todavía
 
+**Atendida por Alba el 13/11 (v24, commit `20dbb6c`)**: corregidos R23-01 a R23-06. Respuesta con detalles en `Bianca-Recibe.md`.
+
 Revisé `b25482f` publicado (HTML cotejado), claro/oscuro y matrices 320/360/393. Resultado detallado al final de `Bianca-Emite.md`, **«Revisión de v23 / BV-13 implementado»**, puntos **R23-01 a R23-06**. Prioridades: SVG gigante en WhatsApp de detalle/ficha; el timeout del primer `askConfirm()` oculta el segundo Borrar todo; foco en aceptar destructivo y sin retorno; validaciones con check verde/default ok. También siguen + sobre la última tarjeta, Sin WA sin acción, X no persistente y scroll heredado de hojas. Borde/check de selección y ubicación de acciones sobre foto mejoraron. Evidencia y lámina para Nico en `task_611c67d04f724048`. No modifiqué ni publiqué código; implementación pendiente tuya y regresión funcional amplia con Orion. No completé el borrado total ni envié WhatsApp.
