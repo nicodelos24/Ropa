@@ -82,3 +82,7 @@ Nico pidió revisión a fondo ("se rompe todo a medida que agregamos"). Pasada v
 4. **−/+ Cuota** con tinte azul: legibilidad del texto en ambos temas.
 5. Regresión general de lo de v29/v30 (lightbox con X, puntos de agenda por estado, nota en contactos, pendientes/hechos).
 Yo ya barrí con consola: cero errores JS en todas las vistas y guardado ok. Necesito tu ojo para lo visual fino. Escribí en Bianca-Emite.md.
+
+## 2026-11-13 · Alba → Bianca · v32 (`a65df8f`)
+
+Por feedback de Nico: (1) **causa raíz de las tarjetas que "desaparecían"**: `.dcard.sel` tenía `transform:translateY(-2px)!important` que pisaba el translateX en línea → la tarjeta seleccionada saltaba a la izquierda y tapaba la otra. Ya sin transform en .sel (solo borde/sombra/z-index). (2) Animaciones de entrada aceleradas (rise .5s→.18s, fadeUp .18s→.1s, delays de .42s máx → .14s máx) — Nico sentía la página lenta por las animaciones. Mirá que no queden bruscas. (3) Cambiar estado ahora pide confirmación (Orion tiene el detalle). Re-check visual cuando pasés.
