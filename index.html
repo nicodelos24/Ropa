@@ -213,8 +213,21 @@ nav button.on{color:var(--navon)}
   position:absolute;left:0;display:flex;gap:12px;align-items:center;
   background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:12px 14px;box-shadow:0 6px 16px rgba(0,0,0,.16);cursor:pointer;
-  transition:transform .28s cubic-bezier(.2,.8,.3,1),box-shadow .28s,width .28s;user-select:none;
+  transition:box-shadow .2s,transform .2s,width .25s;user-select:none;flex-wrap:wrap;
 }
+.dcard.sel{box-shadow:0 10px 26px rgba(0,0,0,.28);border-color:var(--navon);transform:translateY(-2px)}
+.dcard.open{flex-direction:column;align-items:stretch;width:100%!important;transform:none!important;z-index:99!important;border-color:var(--navon)}
+.dbig{display:none;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:12px;margin-top:10px;order:3}
+.dcard.open .dbig{display:block}
+.dcard .dthumb{width:68px;height:68px;border-radius:14px;object-fit:cover;background:var(--card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px}
+.dcard .dprice{font-size:18px;font-weight:800;letter-spacing:.2px}
+.dcard .dname{font-size:14.5px;font-weight:600;margin-top:2px}
+.dcard .dqty{font-size:12px;color:var(--mut);margin-top:1px}
+.dstack .hacts{position:absolute;top:-6px;right:0;z-index:120}
+.dstack .hacts button{background:rgba(15,20,28,.62)}
+.dstack .hacts button svg{color:#fff}
+.dstack .hacts button.e svg{color:#8fb0ff}
+.dstack .hacts button.d svg{color:#ff9d7a}
 .dcard:active{box-shadow:0 10px 22px rgba(0,0,0,.24)}
 .dcard .dthumb{width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
 .dcard .dprice{font-size:17px;font-weight:800;letter-spacing:.2px}
@@ -225,6 +238,12 @@ nav button.on{color:var(--navon)}
 .empty b{display:block;font-size:17px;color:var(--txt);margin-bottom:6px}
 .sett-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
 .sett-card h3{font-size:15px;margin-bottom:4px}
+.sett-card h3 .sic{display:inline-flex;width:17px;height:17px;vertical-align:-3px;margin-right:7px}
+.sett-card h3 .sic svg{width:100%;height:100%}
+.ghost svg{width:17px;height:17px;vertical-align:-3.5px;margin-right:2px}
+.ghost svg,.big svg{display:inline}
+.big svg{width:19px;height:19px;vertical-align:-4.5px;margin-right:2px}
+.ev>div svg{width:100%;height:100%}
 .sett-card p{font-size:13px;color:var(--mut);line-height:1.5}
 .toast{
   position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom));
@@ -270,6 +289,8 @@ nav button.on{color:var(--navon)}
 .dclose{position:sticky;top:-10px;z-index:6;display:flex;justify-content:flex-end;padding:2px;margin:0 -18px 2px;padding-right:10px;padding-left:10px;background:var(--bg)}
 .dclose button{width:44px;height:44px;border-radius:13px;background:var(--card2);color:var(--mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .dclose button svg{width:18px;height:18px}
+.dclose #hEdit svg{color:var(--navon)}
+.dclose #hDel svg{color:#ff9d7a}
 .big.wa svg{width:21px;height:21px;flex-shrink:0}
 #main.pad-xl::after{height:230px}
 .ferr{display:flex;gap:6px;align-items:center;color:var(--c-orange);font-size:12.5px;font-weight:600;margin-top:6px}
@@ -298,6 +319,8 @@ nav button.on{color:var(--navon)}
 .inv-actions{position:absolute;top:6px;right:6px;display:flex;gap:6px}
 .inv-actions button{width:36px;height:36px;border-radius:11px;background:rgba(15,20,28,.55);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .inv-actions button svg{width:16px;height:16px}
+.inv-actions button.e svg{color:#8fb0ff}
+.inv-actions button.d svg{color:#ff9d7a}
 /* clientes */
 .cli{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px}
 .cli .row1{display:flex;justify-content:space-between;align-items:center}
@@ -454,6 +477,11 @@ const ICON={
   trash:SVG(`<path d="M4 7h16M9.5 4h5M6.5 7l.9 13h9.2l.9-13M10 11v5.5M14 11v5.5"/>`),
   x:SVG(`<path d="M6 6l12 12M18 6L6 18"/>`),
   alert:SVG(`<path d="M12 3.5 21.5 20h-19L12 3.5z"/><path d="M12 10v4.5M12 17.2v.3"/>`),
+  camera:SVG(`<path d="M8.5 7 10 4.5h4L15.5 7"/><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="3.5"/>`),
+  image:SVG(`<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5 10 12l4 4 3-3 2.5 2.5"/>`),
+  globe:SVG(`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>`),
+  logout:SVG(`<path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M9 12h11l-3.5-3.5M20 12l-3.5 3.5"/>`),
+  store:SVG(`<path d="M4 9.5 5 20h14l1-10.5"/><path d="M3.5 9.5h17L19 4H5L3.5 9.5z"/><path d="M9 20v-5h6v5"/>`),
 };
 const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const DOW=["D","L","M","M","J","V","S"];
@@ -804,8 +832,8 @@ function renderInventory(main){
       ${i.photo?`<img class="inv-photo" src="${esc(i.photo)}">`:`<div class="inv-ph">${CAT_ICON[i.cat]||"👗"}</div>`}
       <div class="inv-body"><h4>${esc(i.name)}</h4><p>${fmt(i.price)}${i.cat?` · ${esc((CATS.find(c=>c[0]===i.cat)||["","",""])[2]||"")}`:""}</p></div>
       <div class="inv-actions">
-        <button data-act="edit" data-id="${i.id}" aria-label="Editar ${esc(i.name)}">${ICON.pencil}</button>
-        <button data-act="del" data-id="${i.id}" aria-label="Eliminar ${esc(i.name)}">${ICON.trash}</button>
+        <button class="e" data-act="edit" data-id="${i.id}" aria-label="Editar ${esc(i.name)}">${ICON.pencil}</button>
+        <button class="d" data-act="del" data-id="${i.id}" aria-label="Eliminar ${esc(i.name)}">${ICON.trash}</button>
       </div>
     </div>`).join("")+`</div>`;
   main.querySelectorAll(".inv-actions button").forEach(b=>b.onclick=async()=>{
@@ -825,8 +853,9 @@ function openInvEditor(it){
     <input type="file" id="inv-photo" accept="image/*" style="display:none">
     <input type="file" id="inv-cam" accept="image/*" capture="environment" style="display:none">
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="ghost" id="camBtn" style="margin:0;flex:1">📷 Tomar foto</button>
-      <button class="ghost" id="photoBtn" style="margin:0;flex:1">🖼️ Galería</button>
+      <button class="ghost" id="camBtn" style="margin:0;flex:1">${ICON.camera} Tomar foto</button>
+      <button class="ghost" id="photoBtn" style="margin:0;flex:1">${ICON.image} Galería</button>
+      <button class="ghost" id="inv-photo-del" style="margin:0;display:${it.photo?"flex":"none"}">${ICON.trash} Quitar</button>
     </div>
     <label>Tipo de prenda (ícono)</label><div class="seg" id="seg-cat">
       ${CATS.map(c=>`<button data-k="${c[0]}" class="${cat===c[0]?"on":""}">${c[1]} ${c[2]}</button>`).join("")}
@@ -845,6 +874,11 @@ function openInvEditor(it){
   });
   document.getElementById("camBtn").onclick=()=>document.getElementById("inv-cam").click();
   document.getElementById("photoBtn").onclick=()=>document.getElementById("inv-photo").click();
+  document.getElementById("inv-photo-del").onclick=()=>{
+    it.photo=null;
+    document.getElementById("inv-prev").innerHTML="";
+    document.getElementById("inv-photo-del").style.display="none";
+  };
   document.getElementById("inv-cam").onchange=e=>{
     const f=e.target.files[0]; if(!f)return;
     compressPhoto(f,updPrev);
@@ -915,7 +949,7 @@ function openClient(id){
       <div class="avatar" style="width:52px;height:52px;font-size:20px">${esc((c.name||"?")[0].toUpperCase())}</div>
       <div><h2>${esc(c.name)}</h2><p style="font-size:13px;color:var(--mut)">${c.tel?esc(fmtTel(c.tel)):"Sin teléfono"}</p></div>
     </div>
-    <button class="ghost" id="cli-edit" style="margin-top:12px">✏️ Editar datos del cliente</button>
+    <button class="ghost" id="cli-edit" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg> Editar datos del cliente</button>
     ${c.tel?`<button class="big wa" id="cli-wa" style="margin-top:10px">${ICON.wa} Escribir por WhatsApp</button>`:""}
     <div class="sect-title">Pedidos (${ords.length})</div>
     ${ords.length?ords.map(o=>{
@@ -1091,7 +1125,7 @@ function openEditor(orig, presetClient, presetDate){
       <div class="prow">
         <input class="pn" data-i="${i}" value="${esc(it.name)}" placeholder="Producto">
         <input class="pp price" data-i="${i}" value="${it.price??""}" inputmode="numeric" placeholder="$">
-        <button class="del mpic" data-i="${i}" title="Foto" style="opacity:${it.photo?1:.35}">📷</button>
+        <button class="del mpic" data-i="${i}" title="Foto" aria-label="Agregar foto al producto" style="opacity:${it.photo?1:.35}">${ICON.camera}</button>
         <button class="del" data-i="${i}">×</button>
       </div>`).join("");
     document.querySelectorAll(".pn").forEach(el=>el.oninput=()=>{items[el.dataset.i].name=el.value;});
@@ -1159,31 +1193,26 @@ function openEditor(orig, presetClient, presetDate){
   document.getElementById("saveBtn").onclick=()=>{
     const cliente=document.getElementById("f-cliente").value.trim();
     if(!cliente){ fieldErr(document.getElementById("f-cliente"),"Escribe el nombre del cliente"); return; }
-    let clean;
-    if(mode==="inv"){
-      clean=Object.keys(picked).map(iid=>{
-        const inv=db.inventory.find(x=>x.id===iid);
-        return {name:inv.name, price:Number(picked[iid].price)||inv.price||0, qty:picked[iid].qty||1};
-      });
-      if(!clean.length){ toast("Elige productos del inventario","warn"); return; }
-    }else{
-      clean=items.filter(i=>i.name.trim());
-      if(!clean.length){ toast("Agrega al menos un producto","warn"); return; }
-      clean.forEach(i=>i.qty=i.qty||1);
-      // productos escritos a mano: se guardan también en el inventario
-      var nuevos=0;
-      clean.forEach(i=>{
-        const nm=i.name.trim();
-        const ex=db.inventory.find(x=>(x.name||"").toLowerCase()===nm.toLowerCase());
-        if(!ex){
-          db.inventory.push({id:uid("i"),name:nm,price:Number(i.price)||0,cat:"otro",photo:i.photo||null});
-          log("inv_new",`${nm} · desde pedido`);
-          nuevos++;
-        }else if(i.photo&&!ex.photo){
-          ex.photo=i.photo;
-        }
-      });
-    }
+    // limpio = lo del inventario + lo escrito a mano, SIEMPRE (sin importar la pestaña activa)
+    let clean=Object.keys(picked).map(iid=>{
+      const inv=db.inventory.find(x=>x.id===iid);
+      return {name:inv.name, price:Number(picked[iid].price)||inv.price||0, qty:picked[iid].qty||1};
+    });
+    let nuevos=0;
+    items.filter(i=>i.name.trim()).forEach(i=>{
+      const nm=i.name.trim();
+      if(clean.some(c=>(c.name||"").toLowerCase()===nm.toLowerCase()))return;
+      clean.push({name:nm, price:Number(i.price)||0, qty:i.qty||1, photo:i.photo||null});
+      const ex=db.inventory.find(x=>(x.name||"").toLowerCase()===nm.toLowerCase());
+      if(!ex){
+        db.inventory.push({id:uid("i"),name:nm,price:Number(i.price)||0,cat:"otro",photo:i.photo||null});
+        log("inv_new",`${nm} · desde pedido`);
+        nuevos++;
+      }else if(i.photo&&!ex.photo){
+        ex.photo=i.photo;
+      }
+    });
+    if(!clean.length){ toast("Agrega al menos un producto","warn"); return; }
     const data={
       id:orig?orig.id:uid("o"),
       created:orig?orig.created:Date.now(),
@@ -1222,21 +1251,19 @@ function openOrder(id){
         <div class="dname">${esc(i.name)||"Producto"}</div>
         <div class="dqty">${i.qty>1?`${i.qty} × ${fmt(i.price)} la unidad`:"Precio unitario"}</div>
       </div>
+      ${i.photo?`<img class="dbig" src="${esc(i.photo)}" alt="${esc(i.name)}">`:""}
     </div>`).join("");
   openSheet(`<div class="detail">
     <div class="grab"></div>
-    <div class="dclose"><button aria-label="Cerrar detalle" onclick="closeSheet()">${ICON.x}</button></div>
+    <div class="dclose">
+      <button id="hEdit" aria-label="Editar pedido">${ICON.pencil}</button>
+      <button id="hDel" aria-label="Eliminar pedido">${ICON.trash}</button>
+      <button aria-label="Cerrar detalle" onclick="closeSheet()">${ICON.x}</button>
+    </div>
     ${orderStackHTML(o)}
     <h2>${esc(o.cliente)||"Cliente"}</h2>
     <div class="badges" style="margin-top:8px"><span class="b ${st.c}">${st.l}</span>${o.fecha?`<span style="font-size:11px;color:var(--mut);align-self:center">📅 ${fdateShort(o.fecha)}</span>`:""}</div>
-    <div class="hero-wrap ${hero?"":"hero-none"}">
-      ${hero?`<img class="hero" src="${esc(hero.photo)}" alt="${esc(hero.name)}">`:`<div class="ph">🛍️</div>`}
-      <div class="hacts">
-        <button id="hEdit" aria-label="Editar pedido">${ICON.pencil}</button>
-        <button id="hDel" aria-label="Eliminar pedido">${ICON.trash}</button>
-      </div>
-    </div>
-    ${items.length?`<div class="dstack" id="dstack">${dcards}</div>${items.length>1?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para traerla adelante</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
+    ${items.length?`    <div class="dstack" id="dstack"><div class="hacts"><button class="e" id="hEdit2" aria-label="Editar pedido">${ICON.pencil}</button><button class="d" id="hDel2" aria-label="Eliminar pedido">${ICON.trash}</button></div>${dcards}</div>${items.length>1||hero?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para resaltarla${hero?" · otro toque amplía su foto":""}</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
     <div class="totalbar"><span>Total</span><b>${fmt(total(o))}</b></div>
     ${o.estado==="due"?`<div style="margin-top:14px;display:flex;gap:8px">
       <button class="ghost" style="margin:0" id="cq-minus">− Cuota</button>
@@ -1247,20 +1274,29 @@ function openOrder(id){
   </div>`);
   const dstack=document.getElementById("dstack");
   if(dstack){
-    const relayout=()=>{const cs=[...dstack.children];
+    const relayout=()=>{const cs=[...dstack.querySelectorAll(".dcard")];
       const off=cs.length>1?Math.min(56,Math.max(36,(dstack.clientWidth-240)/(cs.length-1))):0;
       cs.forEach((c,i)=>{
-        c.style.transform=`translateX(${i*off}px)`;
-        c.style.zIndex=i+1;
-        c.style.width=Math.min(340,dstack.clientWidth-(cs.length-1)*off)+"px";
+        if(!c.classList.contains("open")){
+          c.style.transform=`translateX(${i*off}px)`;
+          c.style.width=Math.min(340,dstack.clientWidth-(cs.length-1)*off)+"px";
+        }
+        c.style.zIndex=c.classList.contains("open")?120:i+2;
       });
-      const h=cs[0]?cs[0].offsetHeight:0;
-      dstack.style.height=(h+8)+"px";};
+      const h=cs.reduce((m,c)=>Math.max(m,c.offsetTop+(c.classList.contains("open")?c.offsetHeight:0)),0);
+      dstack.style.height=(h+6)+"px";};
     relayout();
-    [...dstack.children].forEach(c=>c.onclick=()=>{dstack.appendChild(c);relayout();});
+    let sel=null,openCard=null;
+    dstack.querySelectorAll(".dcard").forEach(c=>c.onclick=()=>{
+      if(openCard===c){c.classList.remove("open");openCard=null;sel=c;relayout();return;}
+      if(sel===c){c.classList.remove("sel");c.classList.add("open");sel=null;openCard=c;relayout();return;}
+      dstack.querySelectorAll(".dcard").forEach(x=>x.classList.remove("sel","open"));
+      openCard=null;c.classList.add("sel");sel=c;relayout();
+    });
+    setTimeout(relayout,60);
   }
-  document.getElementById("hEdit").onclick=()=>openEditor(o);
-  document.getElementById("hDel").onclick=async()=>{
+  document.getElementById("hEdit").onclick=document.getElementById("hEdit2").onclick=()=>openEditor(o);
+  document.getElementById("hDel").onclick=document.getElementById("hDel2").onclick=async()=>{
     if(!(await askConfirm({title:"¿Eliminar este pedido?",msg:`El pedido de ${o.cliente||"este cliente"} se quita de la lista. El inventario no cambia.`,ok:"Eliminar pedido"})))return;
     log("order_del",`${o.cliente} · ${fmt(total(o))}`);
     db.orders=db.orders.filter(x=>x.id!==id); save(); closeSheet(); toast("Pedido eliminado");
@@ -1284,23 +1320,23 @@ function openOrder(id){
 function renderSettings(){
   const isOwner=FB.perfil&&FB.perfil.rol==="owner";
   return `<div class="grab" style="margin-top:14px"></div><h2 style="font-size:22px;margin:8px 0 14px">Ajustes</h2>
-  ${(FB.perfil&&FB.perfil.negocioId)?`<div class="sett-card"><h3>👤 Mi cuenta</h3>
+  ${(FB.perfil&&FB.perfil.negocioId)?`<div class="sett-card"><h3>${ICON.people} Mi cuenta</h3>
     <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc((auth.currentUser&&auth.currentUser.email)||"")} · ${FB.perfil.rol==="admin"?"Administradora":FB.perfil.rol==="owner"?"Dueño de la app":"Vendedora"}</span></p>
-    <button class="ghost" id="cu-open" style="margin-top:10px">👥 Cuentas del negocio</button>
-    <button class="ghost" id="outBtn" style="margin-top:4px">🚪 Cerrar sesión</button>
-  </div>`:`<div class="sett-card"><h3>👤 Mi cuenta</h3>
+    <button class="ghost" id="cu-open" style="margin-top:10px">${ICON.people} Cuentas del negocio</button>
+    <button class="ghost" id="outBtn" style="margin-top:4px">${ICON.logout} Cerrar sesión</button>
+  </div>`:`<div class="sett-card"><h3>${ICON.people} Mi cuenta</h3>
     <p style="font-size:14px"><b>${esc(FB.perfil.nombre)}</b><br><span style="font-size:12px;color:var(--mut)">${esc((auth.currentUser&&auth.currentUser.email)||"")} · Dueño de la app</span></p>
-    <button class="ghost" id="outBtn" style="margin-top:10px">🚪 Cerrar sesión</button>
+    <button class="ghost" id="outBtn" style="margin-top:10px">${ICON.logout} Cerrar sesión</button>
   </div>`}
-  ${isOwner?`<div class="sett-card"><h3>🏬 Mis negocios</h3>
+  ${isOwner?`<div class="sett-card"><h3>${ICON.store} Mis negocios</h3>
     <p>Creá negocios y códigos de activación para tus clientas.</p>
     <button class="big" id="ng-open" style="margin-top:12px">Abrir panel de negocios</button>
   </div>`:""}
-  <div class="sett-card"><h3>🌗 Apariencia</h3>
+  <div class="sett-card"><h3><span class="sic" style="color:#9db8ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg></span> Apariencia</h3>
     <p>Cambia entre modo oscuro y claro (también con el botón de arriba).</p>
     <button class="ghost" id="themeBtn2" style="margin-top:12px">Cambiar a modo ${((db.theme||"dark")==="dark")?"claro ☀️":"oscuro 🌙"}</button>
   </div>
-  <div class="sett-card"><h3>🌍 Prefijo de país</h3>
+  <div class="sett-card"><h3><span class="sic" style="color:#3fe0cd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg></span> Prefijo de país</h3>
     <p>Se agrega automáticamente a los números de WhatsApp que no lo traigan. Ej: ${esc(prefijo())} (Uruguay).</p>
     <input id="prefijo-in" value="${esc(prefijo())}" style="margin-top:10px" placeholder="+598">
     <button class="ghost" id="prefijo-save" style="margin-top:8px">Guardar prefijo</button>
@@ -1315,7 +1351,7 @@ function renderSettings(){
     <p><b>iPhone:</b> abre esta página en Safari → Compartir → "Agregar a pantalla de inicio".<br>
     <b>Android:</b> menú ⋮ → "Instalar aplicación".</p>
   </div>
-  <div class="sett-card"><h3>🗑️ Borrar todo</h3>
+  <div class="sett-card"><h3><span class="sic" style="color:#ff9d7a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9.5 4h5M6.5 7l.9 13h9.2l.9-13M10 11v5.5M14 11v5.5"/></svg></span> Borrar todo</h3>
     <p>Elimina todos los datos de este teléfono. Exporta tu respaldo antes.</p>
     <button class="ghost danger" id="resetBtn" style="margin-top:12px">Borrar todos los datos</button>
   </div>
@@ -1483,6 +1519,13 @@ function pushNow(){
       if(pushNow._p[i.id]===i.photo)return;
       pushNow._p[i.id]=i.photo;
       ref.collection("fotos").doc(i.id).set({d:i.photo}).catch(()=>{});
+    });
+    // foto quitada: borrar el documento de la nube
+    Object.keys(pushNow._p).forEach(id=>{
+      if(!con.some(i=>i.id===id)){
+        delete pushNow._p[id];
+        ref.collection("fotos").doc(id).delete().catch(()=>{});
+      }
     });
   };
   ref.collection("datos").doc("main").set(payload).then(pushPhotos)
@@ -1767,7 +1810,7 @@ function renderNegocios(main){
 function openCuentas(){
   openSheet(`<div class="grab"></div><h2>Cuentas del negocio</h2>
     <div id="cu-list" style="margin-top:10px"><p style="font-size:13px;color:var(--mut)">Cargando…</p></div>
-    <button class="big" id="cu-inv" style="margin-top:14px">➕ Invitar a alguien por WhatsApp</button>
+    <button class="big" id="cu-inv" style="margin-top:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Invitar a alguien por WhatsApp</button>
     <p style="font-size:12px;color:var(--mut);margin-top:8px">Se genera un código de invitación de un solo uso. Quien lo reciba crea su cuenta con su propio correo y contraseña.</p>
     <button class="ghost" onclick="closeSheet()">Cerrar</button>`);
   const org=FB.perfil.negocioId;
@@ -1778,7 +1821,7 @@ function openCuentas(){
       fsdb.collection("codigos").where("negocioId","==",org).where("usado","==",false).get()
     ]);
     const pend=iv.docs.map(d=>({id:d.id,...d.data()}));
-    box.innerHTML=q.docs.map(d=>`<div class="ev"><div style="font-size:18px;width:26px;text-align:center">${d.data().rol==="admin"?"👑":"🧑‍🤝‍🧑"}</div>
+    box.innerHTML=q.docs.map(d=>`<div class="ev"><div style="width:22px;height:22px;text-align:center">${d.data().rol==="admin"?ICON.wrench:ICON.people}</div>
       <div style="flex:1;min-width:0"><h4 style="font-size:14px">${esc(d.data().nombre)}</h4><p>${esc(d.data().email||"")}</p></div>
       ${d.id!==FB.uid?`<button class="ghost danger" id="cu-del-${d.id}" style="margin:0;padding:6px 10px">Quitar</button>`:`<span style="font-size:12px;color:var(--mut)">vos</span>`}</div>`).join("")
       +(pend.length?`<p style="font-size:12px;color:var(--mut);margin-top:10px">Invitaciones sin usar:</p>`+pend.map(d=>`<div class="ev"><div style="font-size:16px;width:26px;text-align:center">✉️</div>
