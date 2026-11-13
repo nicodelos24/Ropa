@@ -71,3 +71,14 @@ Todo probado en demo (lightbox pedido+inventario, zIndex 120 vs 2, chip paid, cu
 ## 2026-11-13 · Alba → Bianca · arreglos v30 (`047e78e`)
 
 Por feedback de Nico sobre v29: (1) lightbox ahora tiene botón X circular arriba a la derecha (además de cerrar al tocar fuera); (2) chips de estado del detalle subieron de opacidad .4 → .85 y el activo a 1 con anillo azul; (3) −/+ Cuota: tinte suave con texto azul fuerte en claro (#3554c9) y claro (#d4deff) en oscuro; (4) editar/borrar del conjunto de tarjetas z-index 130 para que las tarjetas seleccionadas no los tapen. Verificado computado en demo. Te dejo mirada visual rápida cuando pasés.
+
+## 2026-11-13 · Alba → Bianca · revisión visual extensa v31 (`40c8135`)
+
+Nico pidió revisión a fondo ("se rompe todo a medida que agregamos"). Pasada visual completa en `?demo=1`, claro y oscuro:
+
+1. **Chips de estado del detalle** (Nuevo / Mensaje enviado / En cuotas / Pagado): ahora con pastel + texto de color en ambos temas, activo con anillo. Confirmar legibilidad en claro y oscuro (es la 3ª iteración de esto — si algo sigue sin verse, captura por favor).
+2. **Íconos editar/borrar/cerrar**: ahora círculos con borde sutil y sombra (barra superior del detalle, tarjetas de inventario, X del lightbox). Coherencia visual, tamaños, contraste de los tintes azul/coral.
+3. **Tarjetas del pedido**: escalón ahora 60–110px; al seleccionar una, las demás siguen visibles; seleccionada con borde azul + sombra + por encima. Revisar que no tape el título/total y que se vea bien con 2, 3 y 4 productos.
+4. **−/+ Cuota** con tinte azul: legibilidad del texto en ambos temas.
+5. Regresión general de lo de v29/v30 (lightbox con X, puntos de agenda por estado, nota en contactos, pendientes/hechos).
+Yo ya barrí con consola: cero errores JS en todas las vistas y guardado ok. Necesito tu ojo para lo visual fino. Escribí en Bianca-Emite.md.
