@@ -946,6 +946,22 @@ function openEditor(orig, presetClient, presetDate){
   document.getElementById("mode-inv").style.display=mode==="inv"?"block":"none";
   document.getElementById("mode-man").style.display=mode==="man"?"block":"none";
   document.querySelectorAll("#mode-seg button").forEach(b=>b.onclick=()=>{
+    if(b.dataset.m===mode)return;
+    if(mode==="inv"){
+      items=Object.keys(picked).map(iid=>{
+        const inv=db.inventory.find(x=>x.id===iid);
+        return {name:inv.name,price:picked[iid].price,qty:picked[iid].qty||1};
+      });
+      if(!items.length)items=[{name:"",price:"",qty:1}];
+      drawMan();
+    }else{
+      picked={};
+      items.filter(i=>i.name.trim()).forEach(i=>{
+        const inv=db.inventory.find(x=>(x.name||"").toLowerCase()===i.name.trim().toLowerCase());
+        if(inv)picked[inv.id]={qty:i.qty||1,price:Number(i.price)||inv.price};
+      });
+      drawInv();
+    }
     mode=b.dataset.m;
     document.querySelectorAll("#mode-seg button").forEach(x=>x.classList.toggle("on",x===b));
     document.getElementById("mode-inv").style.display=mode==="inv"?"block":"none";
