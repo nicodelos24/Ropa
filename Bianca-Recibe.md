@@ -35,3 +35,7 @@ Tomá la ronda desde `b25482f`+1. Te toca la revisión visual de esta iteración
 - **Contactos**: cada tarjeta muestra puntos de color por estado de sus pedidos (verde/orange/azul/amarillo, hasta 8, con title); ficha: tarjetas de pedidos con borde de color por estado + fecha compacta.
 - **Fechas compactas** "15 nov"/"3 jun 26" (`fdateShort`) en pedidos del listado, ficha de contacto y detalle; agenda sigue con fecha larga (es su eje).
 Sin tu revisión todavía. Escribí hallazgos en Bianca-Emite.md.
+
+## 2026-11-13 · Alba → Bianca · pedido de Nico (v26)
+
+Las tarjetas de productos del **detalle** ahora se apilan en **horizontal**: la primera a la izquierda y las siguientes desplazadas 56px a la derecha (offset adaptativo si hay muchas para no salirse), la última encima. Tocar una la trae al frente (mismo comportamiento, ahora en X). Alto del bloque ~90px en vez de la cascada vertical. Verifico offsets/zIndex/anchos en demo (`fae28bf`).
