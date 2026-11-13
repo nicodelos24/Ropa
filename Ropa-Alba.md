@@ -1,6 +1,6 @@
 # Ropa — Memoria de Alba (coordinadora del proyecto)
 
-Última actualización: 13/11/2026, rondas BV-13 + R23 + pedido directo de Nico implementadas (cache `ropa-v28`, hasta `97c5f80`).
+Última actualización: 13/11/2026, rondas BV-13 + R23 + pedidos directos de Nico v28/v29 (cache `ropa-v29`, hasta `0f3807b`).
 
 ## Qué es Ropa
 
@@ -49,7 +49,7 @@ Todo esto está hecho y probado:
 
 ## Hallazgos pendientes (de Ropa-Orion.md y Ropa-Bianca.md)
 
-Cerrados: O01–O06, B01–B11, B13, la ronda BV-13 (BV-13-01 a BV-13-05) y sus regresiones R23-01 a R23-06 (SVG WhatsApp 21px, askConfirm versionado con foco seguro e inercia, errores inline con fieldErr + toasts err/warn, "Sin WA" abre editor, scroll de hoja nueva arriba, X sticky 44px). Ya no queda ningún `confirm()` nativo en la app. Además: detalle del pedido sin hero fijo — tarjetas horizontales que se resaltan al 1er toque y se amplían al 2º (mostrando la foto del producto adentro); guardado de pedido SIEMPRE une inventario+manual (no depende de la pestaña activa); quitar foto de producto borra también el doc de la nube (`pushNow._p`); íconos SVG en cámara/galería/ajustes/cuentas; tintes sutiles azul (editar) y coral (eliminar) en botones ícono.
+Cerrados: O01–O06, B01–B11, B13, la ronda BV-13 (BV-13-01 a BV-13-05) y sus regresiones R23-01 a R23-06 (SVG WhatsApp 21px, askConfirm versionado con foco seguro e inercia, errores inline con fieldErr + toasts err/warn, "Sin WA" abre editor, scroll de hoja nueva arriba, X sticky 44px). Ya no queda ningún `confirm()` nativo en la app. Además de lo de v28 (detalle sin hero, guardado mixto, quitar foto con limpieza en nube, íconos SVG con tintes), v29 (`b7937e7`): lightbox global `openLightbox()` (inventario: tocar tarjeta amplia la foto; pedido: 2º toque sobre la seleccionada amplía SOLO la imagen sin ocultar tarjetas); tarjeta seleccionada del pedido queda fija en su lugar pero al frente (sel→zIndex 120, sin moverse; ya no existe el estado `.open` ni `.dbig`); chips de estado clicables en el detalle (cambio de estado sin editar; log order_status); −/+ Cuota con clase `.cqbtn` azul; punto de Próximos en agenda con color del estado; contactos con nota visible (`.nota`), resumen "pendientes · pedidos hechos", y dentro del cliente secciones Pendientes (con miniaturas) / Hechos (compactos sin imagen, tap abre detalle). OJO: el demo no siembra fotos en inventario ni data-ph en pedidos — para probar lightbox hay que setear `db.inventory[0].photo` a mano.
 
 **Importante al tocar askConfirm o modales:** vive en `askConfirm()` (~línea 490), usa contador de instancia (`askN`) + `covHideT` para que el cierre de un diálogo no oculte al siguiente — no quitar eso: Bianca encontró esa regresión (R23-02).
 
