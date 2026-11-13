@@ -215,10 +215,7 @@ nav button.on{color:var(--navon)}
   padding:12px 14px;box-shadow:0 6px 16px rgba(0,0,0,.16);cursor:pointer;
   transition:box-shadow .2s,transform .2s,width .25s;user-select:none;flex-wrap:wrap;
 }
-.dcard.sel{box-shadow:0 10px 26px rgba(0,0,0,.28);border-color:var(--navon);transform:translateY(-2px)}
-.dcard.open{flex-direction:column;align-items:stretch;width:100%!important;transform:none!important;z-index:99!important;border-color:var(--navon)}
-.dbig{display:none;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:12px;margin-top:10px;order:3}
-.dcard.open .dbig{display:block}
+.dcard.sel{box-shadow:0 10px 26px rgba(0,0,0,.28);border-color:var(--navon);transform:translateY(-2px)!important;z-index:120!important}
 .dcard .dthumb{width:68px;height:68px;border-radius:14px;object-fit:cover;background:var(--card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px}
 .dcard .dprice{font-size:18px;font-weight:800;letter-spacing:.2px}
 .dcard .dname{font-size:14.5px;font-weight:600;margin-top:2px}
@@ -310,7 +307,20 @@ nav button.on{color:var(--navon)}
 #auth .aok{color:var(--c-green);font-size:13px;margin-top:10px;text-align:center;min-height:17px}
 /* inventario */
 .inv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.inv-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.inv-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:zoom-in}
+.lightbox{position:fixed;inset:0;background:rgba(8,10,14,.92);z-index:500;display:flex;align-items:center;justify-content:center;padding:18px;animation:lbIn .16s ease}
+.lightbox img{max-width:100%;max-height:100%;border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.5)}
+@keyframes lbIn{from{opacity:0}to{opacity:1}}
+.strow{display:flex;gap:6px;flex-wrap:wrap}
+.strow .b{opacity:.4;cursor:pointer;border:none;padding:5px 11px}
+.strow .b.on{opacity:1;box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--c-blue);color:#fff}
+.strow .b.paid.on{color:#03301a}
+.strow .b.msg.on{color:#3d2500}
+.strow .b.new.on{color:var(--mut)}
+.cqbtn{background:color-mix(in srgb,var(--c-blue) 55%,var(--card))!important;color:var(--navon)!important;border:1.5px solid color-mix(in srgb,var(--navon) 45%,transparent)!important;font-weight:800}
+.o .nota{font-size:11.5px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.o .nota::before{content:"📝 "}
+.cli .nota{font-size:11.5px;color:var(--mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
 .inv-photo{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--card2)}
 .inv-ph{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--txt)}
 .inv-body{padding:8px 10px 10px}
@@ -762,10 +772,13 @@ function renderHome(main){
       <button class="hcard" data-go="clients"><span class="go">›</span><span class="ic ic-people">${ICON.people}</span><b>${db.clients.length}</b><small>Cliente${db.clients.length!==1?"s":""}</small></button>
     </div>
     ${upcoming.length?`<div class="sect-title">Próximos en agenda</div>
-      ${upcoming.slice(0,4).map(u=>`<div class="ev" data-${u.tipo}="${u.id}" data-kind="${u.tipo}">
-        <div class="dot" style="background:${u.tipo==="o"?"var(--c-orange)":"var(--acc)"}"></div>
+      ${upcoming.slice(0,4).map(u=>{
+        const uo=db.orders.find(x=>x.id===u.id);
+        const uc=uo?STC[uo.estado]||"yellow":"orange";
+        return `<div class="ev" data-${u.tipo}="${u.id}" data-kind="${u.tipo}">
+        <div class="dot" style="background:var(--c-${uc})"></div>
         <div style="flex:1;min-width:0"><h4>${u.titulo}</h4><p>${u.sub}${u.monto?" · "+u.monto:""}</p></div>
-        <div class="ev-date">${fdate(u.ds)}</div></div>`).join("")}`:""}
+        <div class="ev-date">${fdate(u.ds)}</div></div>`;}).join("")}`:""}
     ${pendO.length?`<div class="sect-title">Pendientes de cobro</div>
       ${pendO.slice(0,3).map(o=>{
         const st=ST[o.estado]||ST.new;
@@ -828,7 +841,7 @@ function renderInventory(main){
   const list=db.inventory.filter(i=>!q||(i.name||"").toLowerCase().includes(q));
   if(!list.length){ main.innerHTML=`<div class="empty"><b>${q?"Sin resultados":"Inventario vacío"}</b>${q?`Nada coincide con “${esc(query)}”.<br>Probá con otro nombre.`:"Agrega tus productos con nombre, precio y foto.<br>Luego podrás elegirlos al crear un pedido."}</div>`; return; }
   main.innerHTML=`<div class="inv">`+list.map(i=>`
-    <div class="inv-card">
+    <div class="inv-card" data-id="${i.id}">
       ${i.photo?`<img class="inv-photo" src="${esc(i.photo)}">`:`<div class="inv-ph">${CAT_ICON[i.cat]||"👗"}</div>`}
       <div class="inv-body"><h4>${esc(i.name)}</h4><p>${fmt(i.price)}${i.cat?` · ${esc((CATS.find(c=>c[0]===i.cat)||["","",""])[2]||"")}`:""}</p></div>
       <div class="inv-actions">
@@ -836,7 +849,11 @@ function renderInventory(main){
         <button class="d" data-act="del" data-id="${i.id}" aria-label="Eliminar ${esc(i.name)}">${ICON.trash}</button>
       </div>
     </div>`).join("")+`</div>`;
-  main.querySelectorAll(".inv-actions button").forEach(b=>b.onclick=async()=>{
+  main.querySelectorAll(".inv-card").forEach(card=>{
+    card.onclick=()=>openLightbox((db.inventory.find(x=>x.id===card.dataset.id)||{}).photo);
+  });
+  main.querySelectorAll(".inv-actions button").forEach(b=>b.onclick=async e=>{
+    e.stopPropagation();
     const it=db.inventory.find(x=>x.id===b.dataset.id);
     if(b.dataset.act==="del"){
       if(!(await askConfirm({title:"¿Eliminar este producto?",msg:"Se quita del inventario. Los pedidos ya guardados no cambian.",ok:"Eliminar producto"})))return;
@@ -914,6 +931,15 @@ function compressPhoto(file, cb){
   img.src=url;
 }
 
+function openLightbox(src){
+  if(!src)return;
+  const ov=document.createElement("div");
+  ov.className="lightbox";
+  ov.innerHTML=`<img src="${esc(src)}" alt="Foto ampliada">`;
+  ov.onclick=()=>ov.remove();
+  document.body.appendChild(ov);
+}
+
 /* ---------- Clientes ---------- */
 function renderClients(main){
   const q=query.toLowerCase();
@@ -922,10 +948,12 @@ function renderClients(main){
   main.innerHTML=list.map(c=>{
     const ords=db.orders.filter(o=>findClient(o) && findClient(o).id===c.id);
     const pend=ords.filter(o=>o.estado!=="paid").length;
+    const done=ords.length-pend;
     const dots=ords.slice(0,8).map(o=>`<span class="cdot" style="background:var(--c-${STC[o.estado]||"yellow"})" title="${esc((ST[o.estado]||ST.new).l)}"></span>`).join("");
+    const resumen=`${pend?`${pend} pendiente${pend!==1?"s":""}`:done?"Al día":"Sin pedidos"}${done?` · ${done} pedido hecho${done!==1?"s":""}`:""}`;
     return `<div class="cli" data-id="${c.id}">
       <div class="row1"><div class="cli-id"><div class="avatar">${esc((c.name||"?")[0].toUpperCase())}</div>
-      <div style="min-width:0"><h3>${esc(c.name)}</h3><p>${ords.length} pedido${ords.length!==1?"s":""}${pend?` · ${pend} pendiente${pend!==1?"s":""}`:" · al día"}${c.tel?`<br>📞 ${esc(fmtTel(c.tel))}`:""}</p>${ords.length?`<div class="cdots">${dots}</div>`:""}</div></div>
+      <div style="min-width:0"><h3>${esc(c.name)}</h3><p>${resumen}${c.tel?`<br>📞 ${esc(fmtTel(c.tel))}`:""}${c.notas?`<div class="nota">${esc(c.notas)}</div>`:""}</p>${ords.length?`<div class="cdots">${dots}</div>`:""}</div></div>
       <button class="cli-wa ${c.tel?"":"none"}" aria-label="${c.tel?"Escribir por WhatsApp a "+esc(c.name):"Agregar WhatsApp a "+esc(c.name)}">${c.tel?ICON.wa:"Sin<br>WA"}</button></div>
     </div>`;
   }).join("");
@@ -951,14 +979,20 @@ function openClient(id){
     </div>
     <button class="ghost" id="cli-edit" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg> Editar datos del cliente</button>
     ${c.tel?`<button class="big wa" id="cli-wa" style="margin-top:10px">${ICON.wa} Escribir por WhatsApp</button>`:""}
-    <div class="sect-title">Pedidos (${ords.length})</div>
-    ${ords.length?ords.map(o=>{
+    ${c.notas?`<p style="font-size:13px;color:var(--mut);margin:10px 2px 0">📝 ${esc(c.notas)}</p>`:""}
+    <div class="sect-title">Pendientes (${ords.filter(o=>o.estado!=="paid").length})</div>
+    ${ords.filter(o=>o.estado!=="paid").length?ords.filter(o=>o.estado!=="paid").map(o=>{
       const st=ST[o.estado]||ST.new;
       return `<div class="o" data-id="${o.id}" style="border-left-color:var(--c-${STC[o.estado]||"yellow"})">
         ${orderStackHTML(o)}
         <div class="row1"><h3 style="font-size:14px">${esc((o.items||[]).map(i=>i.name).join(", "))||"Pedido"}</h3><span class="total" style="font-size:14px">${fmt(total(o))}</span></div>
         <div class="badges"><span class="b ${st.c}">${st.l}</span>${o.fecha?`<span style="font-size:11px;color:var(--mut);align-self:center">📅 ${fdateShort(o.fecha)}</span>`:""}</div></div>`;
-    }).join(""):`<p style="font-size:13px;color:var(--mut)">Sin pedidos todavía.</p>`}
+    }).join(""):`<p style="font-size:13px;color:var(--mut)">Nada pendiente de cobro.</p>`}
+    <div class="sect-title">Hechos (${ords.filter(o=>o.estado==="paid").length})</div>
+    ${ords.filter(o=>o.estado==="paid").length?ords.filter(o=>o.estado==="paid").map(o=>`
+      <div class="o" data-id="${o.id}" style="border-left-color:var(--c-green)">
+        <div class="row1"><h3 style="font-size:14px">${esc((o.items||[]).map(i=>i.name).join(", "))||"Pedido"}</h3><span class="total" style="font-size:14px">${fmt(total(o))}</span></div>
+        <div class="badges"><span class="b paid">Pagado</span>${o.fecha?`<span style="font-size:11px;color:var(--mut);align-self:center">📅 ${fdateShort(o.fecha)}</span>`:""}</div></div>`).join(""):`<p style="font-size:13px;color:var(--mut)">Todavía no cerró ningún pedido.</p>`}
     <button class="big" id="cli-new-order">+ Nuevo pedido para ${esc((c.name||"").split(" ")[0])}</button>
     <button class="ghost" onclick="closeSheet()">Cerrar</button>`);
   document.getElementById("cli-edit").onclick=()=>{
@@ -1244,14 +1278,13 @@ function openOrder(id){
   });
   const hero=items.find(i=>i.photo);
   const dcards=items.map(i=>`
-    <div class="dcard">
+    <div class="dcard" data-ph="${i.photo?esc(i.photo):""}">
       ${i.photo?`<img class="dthumb" src="${esc(i.photo)}">`:`<div class="dthumb">${CAT_ICON[i.cat]||"👗"}</div>`}
       <div>
         <div class="dprice">${fmt(i.price*i.qty)}</div>
         <div class="dname">${esc(i.name)||"Producto"}</div>
         <div class="dqty">${i.qty>1?`${i.qty} × ${fmt(i.price)} la unidad`:"Precio unitario"}</div>
       </div>
-      ${i.photo?`<img class="dbig" src="${esc(i.photo)}" alt="${esc(i.name)}">`:""}
     </div>`).join("");
   openSheet(`<div class="detail">
     <div class="grab"></div>
@@ -1262,13 +1295,16 @@ function openOrder(id){
     </div>
     ${orderStackHTML(o)}
     <h2>${esc(o.cliente)||"Cliente"}</h2>
-    <div class="badges" style="margin-top:8px"><span class="b ${st.c}">${st.l}</span>${o.fecha?`<span style="font-size:11px;color:var(--mut);align-self:center">📅 ${fdateShort(o.fecha)}</span>`:""}</div>
-    ${items.length?`    <div class="dstack" id="dstack"><div class="hacts"><button class="e" id="hEdit2" aria-label="Editar pedido">${ICON.pencil}</button><button class="d" id="hDel2" aria-label="Eliminar pedido">${ICON.trash}</button></div>${dcards}</div>${items.length>1||hero?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para resaltarla${hero?" · otro toque amplía su foto":""}</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
+    <div class="badges" style="margin-top:8px">
+      <div class="strow">${["new","msg","due","paid"].map(k=>`<button class="b ${STC[k]} ${k===o.estado?"on":""}" data-st="${k}">${ST[k].l}</button>`).join("")}</div>
+      ${o.fecha?`<span style="font-size:11px;color:var(--mut);align-self:center">📅 ${fdateShort(o.fecha)}</span>`:""}
+    </div>
+    ${items.length?`    <div class="dstack" id="dstack"><div class="hacts"><button class="e" id="hEdit2" aria-label="Editar pedido">${ICON.pencil}</button><button class="d" id="hDel2" aria-label="Eliminar pedido">${ICON.trash}</button></div>${dcards}</div>${items.length>1||hero?`<p style="font-size:11px;color:var(--mut);margin:8px 2px 0">Tocá una tarjeta para traerla al frente${hero?" · otro toque amplía su foto":""}</p>`:""}`:`<p style="color:var(--mut);font-size:14px;margin-top:12px">Sin productos</p>`}
     <div class="totalbar"><span>Total</span><b>${fmt(total(o))}</b></div>
-    ${o.estado==="due"?`<div style="margin-top:14px;display:flex;gap:8px">
-      <button class="ghost" style="margin:0" id="cq-minus">− Cuota</button>
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px">Pagó ${Number(o.cuotasPagadas)||0} de ${o.cuotas||2}</div>
-      <button class="ghost" style="margin:0" id="cq-plus">+ Cuota</button></div>`:""}
+    ${o.estado==="due"?`<div style="margin-top:14px;display:flex;gap:8px;align-items:center">
+      <button class="ghost cqbtn" style="margin:0" id="cq-minus">− Cuota</button>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;text-align:center">Pagó ${Number(o.cuotasPagadas)||0} de ${o.cuotas||2}</div>
+      <button class="ghost cqbtn" style="margin:0" id="cq-plus">+ Cuota</button></div>`:""}
     ${o.tel?`<button class="big wa" id="waBtn">${ICON.wa} Escribir por WhatsApp</button>`:""}
     <button class="ghost" onclick="closeSheet()">Cerrar</button>
   </div>`);
@@ -1277,24 +1313,27 @@ function openOrder(id){
     const relayout=()=>{const cs=[...dstack.querySelectorAll(".dcard")];
       const off=cs.length>1?Math.min(56,Math.max(36,(dstack.clientWidth-240)/(cs.length-1))):0;
       cs.forEach((c,i)=>{
-        if(!c.classList.contains("open")){
-          c.style.transform=`translateX(${i*off}px)`;
-          c.style.width=Math.min(340,dstack.clientWidth-(cs.length-1)*off)+"px";
-        }
-        c.style.zIndex=c.classList.contains("open")?120:i+2;
+        c.style.transform=`translateX(${i*off}px)`;
+        c.style.width=Math.min(340,dstack.clientWidth-(cs.length-1)*off)+"px";
+        c.style.zIndex=c.classList.contains("sel")?120:i+2;
       });
-      const h=cs.reduce((m,c)=>Math.max(m,c.offsetTop+(c.classList.contains("open")?c.offsetHeight:0)),0);
+      const h=cs.reduce((m,c)=>Math.max(m,c.offsetTop+c.offsetHeight),0);
       dstack.style.height=(h+6)+"px";};
     relayout();
-    let sel=null,openCard=null;
+    let sel=null;
     dstack.querySelectorAll(".dcard").forEach(c=>c.onclick=()=>{
-      if(openCard===c){c.classList.remove("open");openCard=null;sel=c;relayout();return;}
-      if(sel===c){c.classList.remove("sel");c.classList.add("open");sel=null;openCard=c;relayout();return;}
-      dstack.querySelectorAll(".dcard").forEach(x=>x.classList.remove("sel","open"));
-      openCard=null;c.classList.add("sel");sel=c;relayout();
+      if(sel===c){ openLightbox(c.dataset.ph); return; }
+      dstack.querySelectorAll(".dcard").forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel"); sel=c; relayout();
     });
     setTimeout(relayout,60);
   }
+  document.querySelectorAll(".strow .b").forEach(b=>b.onclick=()=>{
+    if(b.dataset.st===o.estado)return;
+    o.estado=b.dataset.st; o.cuotasPagadas=o.estado==="paid"?Math.max(Number(o.cuotasPagadas)||0, o.cuotas||2):o.cuotasPagadas;
+    log("order_status",`${o.cliente} → ${(ST[o.estado]||ST.new).l}`);
+    save(); render(); openOrder(id); toast(`Estado: ${(ST[o.estado]||ST.new).l}`);
+  });
   document.getElementById("hEdit").onclick=document.getElementById("hEdit2").onclick=()=>openEditor(o);
   document.getElementById("hDel").onclick=document.getElementById("hDel2").onclick=async()=>{
     if(!(await askConfirm({title:"¿Eliminar este pedido?",msg:`El pedido de ${o.cliente||"este cliente"} se quita de la lista. El inventario no cambia.`,ok:"Eliminar pedido"})))return;
