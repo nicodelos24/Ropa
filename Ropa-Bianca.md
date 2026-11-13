@@ -1,5 +1,7 @@
 # Ropa — Memoria de revisión visual de Bianca
 
+> **Actualización vigente (13/11/2026):** la corrección visual puntual de v29 está implementada y verificada en local, sin publicar. Ver «Corrección visual de v29» al final y el informe técnico completo en `Bianca-Emite.md`. El NO OK del 12/11 y v23 de abajo es histórico, no el resultado de esta ronda.
+
 **Responsable:** Bianca, UI/UX Reviewer.  
 **Solicitante:** Nico.  
 **Fecha:** 12 de noviembre de 2026, Argentina/Uruguay (UTC−03).  
@@ -328,3 +330,21 @@ No modifiqué código ni hice push; agregué únicamente el documento.
 - Probé cancelar/aceptar un borrado de pedido de muestra y recargué para regenerar los cinco pedidos. No completé Borrar todo ni envié WhatsApp. URL de contacto interceptada temporalmente para verificar destino sin navegar, restaurando el método original. Contenedor de revisión retirado.
 - Evidencia preservada en `task_611c67d04f724048`: lámina `ropa-v23-revision-visual.png`, matrices y capturas. Solo documentación modificada; sin commit, push o publicación.
 - Pendientes explícitos: correcciones de Alba, regresión funcional amplia con Orion; no aprobados consola, teclado/lector completo, zoom 200 %, dispositivo físico, importación ni borrado total final. Ver límites del informe antes de declarar algo verificado.
+
+---
+
+## Corrección visual de v29 · 13 de noviembre de 2026
+
+**Pedido de Nico / tarea `task_081ef3e96ee94aec`. Resultado visual: OK para los cuatro problemas informados, en local; sin publicar.**
+
+- Base publicada y local `eaaaf40`: HTML idéntico, SHA-256 `374df11bc08cfa549fb91cf6b3ea3550686518ed24aa6a58b3bfa4f9ccbfe379`, cache v29.
+- Implementación en `/home/nico/Documents/GitHub/Ropa/.worktrees/fix-visual-v29`, rama `fix/visual-v29`, **commit local `66541f5`** (worktree limpio). Cambiados sólo `index.html` y `sw.js` (cache preparada v30). El código de raíz/master y la publicación no se modificaron por esta corrección; documentación compartida y capturas sí están en la raíz.
+- **Foto ampliada:** × Cerrar visible de 44px, Escape/fondo, diálogo accesible, foco contenido/restaurado. Se prueba desde inventario y pedido.
+- **Estados:** se corregían clases equivocadas (`STC` devolvía nombres que no existían en `.b`) y opacidad `.4`; ahora los cuatro son legibles, en dos columnas con ≥44px y check/aria-pressed para el activo. En cuotas activo también corregido en editor. Texto mínimo medido **4.90:1**.
+- **Cuotas:** fondos suaves, texto/borde aptos para ambos temas; resumen con espacio propio. Contraste **6.53:1 claro / 9.52:1 oscuro**.
+- **Editar/eliminar:** única barra superior sticky (se retiraron duplicados flotantes que quedaban debajo), objetivos 44×44. Tarjetas aisladas en su propio contexto; la seleccionada sigue **fija en su posición horizontal y al frente**. Quité el transform de selección que anulaba translateX. Segundo toque sigue ampliando sólo la foto. Offset no negativo para muchas tarjetas; vacío sin productos también abre/edita sin crash.
+- Navegador real: **320/360/393×800 y 1280×900, claro/oscuro**, más 320×568, seis productos y nombres largos. Sin overflow; x/y de selección sin cambios; hit testing de acciones positivo incluso con scroll. Estados rápidos, cuotas hasta Pagado, editar y confirmar/cancelar eliminar, botón/Escape/fondo, Tab y foco probados sólo en demo/sintéticos. 0 errores JS; sintaxis y diff check OK.
+- HTML final servido/archivo: SHA-256 `da784fafd86832a3f7c0ced146bdbc83965df022c4ce316e30cdac0cb20b4e75`.
+- Evidencia **compartida y duradera**: [índice completo](INDICE-CAPTURAS.md), [lámina resumen](capturas/2026-11-13/bianca-v30-resumen-visual.png), antes publicado `bianca-v29-antes-claro-393.png` y originales `bianca-v30-*.png`. Sólo datos demo y fotos sintéticas.
+- Informe técnico/causas/mediciones: última entrada de `Bianca-Emite.md`. Comunicación de entrega en `Alba-Recibe.md`. **Orion: APPROVED en cuotas, estados rápidos, editar y eliminar/cancelar/confirmar con última tarjeta seleccionada, sin fallos reproducibles.** Su sesión read-only dejó lightbox, mediciones/móvil, consola, scroll forzado y vacío sin ejecución independiente; esos puntos sí los verifiqué yo. No equivale a aprobación integral de Orion. [Informe QA completo](capturas/2026-11-13/orion-v30-qa.md). Entrega local cerrada, preparación **4/5**: lista para integrar por Alba cuando corresponda, sin publicar; teléfono físico fuera de cobertura.
+- **Límites:** no teléfono físico, safe areas/teclado virtual reales, ni lector de pantalla completo; no aprobación general v24–v28 ni cierre de B12. No cuentas/datos reales, WhatsApp, reglas Firebase, merge, push ni publicación.

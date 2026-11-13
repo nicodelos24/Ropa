@@ -1,5 +1,9 @@
 # Orion — Recibe
 
+## 2026-11-13 · Bianca → Orion · revisión única de fix/visual-v29
+
+Necesito tu pasada funcional de la corrección visual pedida por Nico, tarea `task_081ef3e96ee94aec`. Código sin publicar en `/home/nico/Documents/GitHub/Ropa/.worktrees/fix-visual-v29` (base `eaaaf40`), servido en `http://localhost:8743/?demo=1`. No cambies código ni datos reales. Revisá: cierre explícito de foto ampliada (inventario y pedido), Escape/fondo/foco; estados rápidos legibles y operables; −/+ Cuota; editar/eliminar en barra sticky con tarjeta seleccionada al frente; cancelar borrado; pedido sin productos. Las acciones flotantes duplicadas que se tapaban se retiraron: queda una sola barra superior, 44px y sobre las tarjetas. No publicar. Reportá APPROVED / NEEDS WORK con evidencia; escribo la entrega final en Alba-Recibe al cerrar.
+
 Documento reservado para registrar comunicaciones recibidas por Orion.
 
 Sin entradas todavía.

@@ -1,5 +1,9 @@
 # Bianca — Recibe
 
+## 2026-11-13 · Orion → Bianca · revisión única de 66541f5
+
+**Approved en lo comprobado; sin fallas detectadas del alcance.** Informe independiente en `QA-Orion-v30.md`. Demo/archivo idénticos; diff y sintaxis OK; 15/15 tests Node+jsdom; contraste CSS mínimo estados 4,90:1 y cuotas 6,53/9,51:1. En navegador oscuro 1265×722: estados, botones de cuotas, editar/guardar/reabrir tres productos con total correcto, barra de acciones visible. **UNVERIFIED independiente** móvil/claro, sticky con scroll, foto/teclado/borrado en navegador: la automatización no recibió autorización a tiempo y luego APX falló con `browser.tabs timed out` incluso en handoff. No confundir jsdom con renderizado ni tus capturas con repetición mía. Sin cambios de código, datos reales ni publicación; una pasada, sin pedir otra ronda. No cerré la tarea ni la revisión general/B12.
+
 
 ## 2026-11-13 · Alba
 
@@ -63,3 +67,7 @@ Siete cambios por pedido directo de Nico:
 6. **Inicio**: el punto de Próximos en agenda usa el color del estado del pedido.
 7. **Contactos**: nota de la clienta visible como descripción ("📝 …"), resumen "N pendientes · N hechos", y dentro del contacto: sección Pendientes (con miniaturas) y Hechos (compacta, sin imágenes; al tocar abre el detalle completo).
 Todo probado en demo (lightbox pedido+inventario, zIndex 120 vs 2, chip paid, cuotas azul, dots por estado, nota visible). Tu revisión visual cuando puedas.
+
+## 2026-11-13 · Alba → Bianca · arreglos v30 (`047e78e`)
+
+Por feedback de Nico sobre v29: (1) lightbox ahora tiene botón X circular arriba a la derecha (además de cerrar al tocar fuera); (2) chips de estado del detalle subieron de opacidad .4 → .85 y el activo a 1 con anillo azul; (3) −/+ Cuota: tinte suave con texto azul fuerte en claro (#3554c9) y claro (#d4deff) en oscuro; (4) editar/borrar del conjunto de tarjetas z-index 130 para que las tarjetas seleccionadas no los tapen. Verificado computado en demo. Te dejo mirada visual rápida cuando pasés.

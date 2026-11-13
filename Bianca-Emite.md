@@ -359,3 +359,46 @@ Son puntos de partida, no instrucciones para editar a ciegas si el archivo cambi
 - Pendientes de regresión funcional después de corregir: importación y su cancelación, respaldo inválido, borrado total final con base descartable, cuentas/permisos/clave, recorrido de foco por teclado y lector, zoom 200 %, teléfono físico/teclado virtual, consola y persistencia completa guardar/reabrir. No tuve una herramienta de consola en este recorrido y no afirmo que no hubo errores allí.
 
 **Aviso a Alba:** esta revisión y sus seis puntos quedan referenciados en `Alba-Recibe.md`. La implementación corresponde a Alba; las regresiones funcionales amplias, a Orion. No modifiqué la app, no hice commit/push ni publiqué cambios. Los resultados históricos de la entrada anterior no deben confundirse con la aprobación de v23.
+
+---
+
+## 2026-11-13 · Corrección visual de v29 pedida por Nico
+
+**Tarea:** `task_081ef3e96ee94aec`. **Resultado visual propio: OK para los cuatro puntos de esta tarea, en local; no publicado.** La revisión histórica de v23 no es el veredicto de esta ronda.
+
+### Base y causas comprobadas
+
+Cotejé la captura de Nico y abrí la demo publicada. El HTML de GitHub Pages y el del checkout `eaaaf40` coincidieron: SHA-256 `374df11bc08cfa549fb91cf6b3ea3550686518ed24aa6a58b3bfa4f9ccbfe379` (cache v29). Reproduje:
+
+1. `openLightbox()` sólo creaba una imagen y cerraba tocando cualquier lugar; no existía botón de cierre.
+2. Los estados usaban clases `yellow/orange/blue/green` de `STC`, pero el CSS esperaba `new/msg/due/paid`; terminaban sin fondo y con texto blanco. Además, los no activos tenían `opacity:.4`.
+3. Las cuotas usaban texto azul pastel sobre fondo azul claro, sin contraste suficiente.
+4. Las acciones flotantes y la tarjeta seleccionada compartían z-index 120, y la tarjeta se pintaba después. Además `.dcard.sel` tenía `transform:translateY(-2px)!important`, anulando el desplazamiento horizontal de JS.
+
+### Cambios implementados (worktree aislado)
+
+`/home/nico/Documents/GitHub/Ropa/.worktrees/fix-visual-v29`, rama `fix/visual-v29`, base `eaaaf40`, **commit local `66541f5`**. Sólo código `index.html` y cache `sw.js` → `ropa-v30`; worktree limpio después del commit. No se integró ni publicó.
+
+- Foto ampliada: botón **× Cerrar** visible, objetivo de 44px, respetando safe areas; cierra con botón, Escape o fondo. La imagen no se cierra accidentalmente al tocarla. Diálogo con nombre accesible, foco contenido/restaurado y contenido subyacente inerte mientras está abierto.
+- Estados: clases semánticas correctas, sin opacidad reducida, tintes de la paleta existente, cuatro botones de ≥44px en dos columnas, selección con check visible y `aria-pressed`. Corregí también el texto del estado En cuotas activo del editor a blanco sobre azul.
+- Cuotas: texto azul oscuro sobre tinte suave en claro, texto claro en oscuro, borde visible, ≥44px y resumen `Pagó / N de N` con ancho propio.
+- Acciones del pedido: retiré el duplicado flotante que se tapaba; **Editar, Eliminar y Cerrar quedan en una sola barra superior sticky**, con objetivos 44×44 y colores de icono aptos en ambos temas. Las tarjetas tienen contexto de apilado aislado: no cubren esa barra al hacer scroll. No cambié el apilado horizontal solicitado.
+- Selección de tarjeta: eliminé el transform que la movía; se resalta exactamente en su lugar y pasa al frente. Segundo toque amplía sólo la foto. Adapté el offset a anchos pequeños/muchos productos para no producir anchos negativos ni overflow. Las tarjetas son botones con estado seleccionado accesible. Ya no hay referencias a `hEdit2/hDel2` que fallaban en el estado sin productos.
+
+### Verificación propia (navegador real, datos demo/sintéticos)
+
+- **320 / 360 / 393 × 800, y 1280 × 900; claro y oscuro:** sin overflow horizontal; tarjetas seleccionadas con la misma x/y antes/después; hit testing positivo de tarjeta y barra de acciones. Complemento 320×568 y seis productos con nombres largos/scroll; acciones siguen visibles y operables.
+- **Texto de estados:** mínimo **4.90:1** (En cuotas activo); inactivos en claro **5.95 / 6.21 / 6.71 / 6.40:1** para Nuevo/Mensaje/En cuotas/Pagado, respectivamente. Activos claro **15.14 / 6.36 / 4.90 / 6.51:1**. Activos en oscuro usan los mismos colores salvo Nuevo (**14.12:1**); inactivos oscuro entre **8.63 y 10.18:1**. No es una auditoría de contraste de toda la app.
+- **−/+ Cuota:** **6.53:1 claro / 9.52:1 oscuro**; iconos de Editar/Eliminar ≥ **4.48:1** en claro y ≥ **7.77:1** en oscuro. Objetivos de 44px o más.
+- Probé cambiar los cuatro estados con sus controles reales; cuotas 1→0→1→2→Pagado (3); segundo toque/foto del pedido; foto desde inventario; Cerrar, Escape y fondo; Tab contenido y foco de vuelta a la tarjeta; editar abre; eliminar pide confirmación y cancelar conserva el pedido. Pedido sin productos muestra su vacío y permite editar, sin excepción.
+- Sintaxis JS (`new Function` sobre scripts) y `git diff --check`: OK. **0 errores JS de página y 0 errores de consola en la pasada local**; quedan tres avisos preexistentes de Firebase/meta. La publicación había mostrado además un favicon 404, ajeno a esta corrección.
+- HTML servido local cotejado con el archivo final: SHA-256 `da784fafd86832a3f7c0ced146bdbc83965df022c4ce316e30cdac0cb20b4e75`.
+- **Revisión independiente de Orion cerrada (`review-visual-v29`): APPROVED en los flujos ejecutados, sin fallos reproducibles.** Confirmó cuotas hasta Pagado, los cuatro estados rápidos, editar con última tarjeta seleccionada y eliminar/cancelar/confirmar en ambos temas. Su sesión read-only impidió instrumentar el lightbox, medir móvil/contraste/geometría, consola, scroll forzado y vacío: eso queda **UNVERIFIED por Orion**, no por mí; mi pasada real de navegador de arriba sí lo cubrió. No presento mi cobertura como una segunda verificación independiente. Informe completo preservado en `capturas/2026-11-13/orion-v30-qa.md` e indexado. No necesito otra ronda ni una decisión del dueño para cerrar esta corrección local.
+
+### Evidencia, entrega y límites
+
+Capturas originales de navegador y lámina resumen en **`capturas/2026-11-13/bianca-v30-*.png`**, enlazadas individualmente en **`INDICE-CAPTURAS.md`**; antes publicado: `bianca-v29-antes-claro-393.png`. La lámina junta claro/oscuro y cierre de inventario; no es una nueva pantalla de la app.
+
+No usé cuentas ni datos reales, no envié WhatsApp, no cambié reglas Firebase, no hice push/merge ni publiqué. Fotos de prueba SVG y pedidos de prueba viven sólo en la demo. **No verificado en teléfono físico**, safe areas reales, teclado virtual ni lector de pantalla completo. No cierro B12 ni la revisión general v24–v28 por esta tarea.
+
+**Registro de comunicaciones y cierre:** pedí revisión única a Orion en su Recibe e incorporé su dictamen con sus límites. Entregué resultados, commit y evidencia a Alba en `Alba-Recibe.md`; el índice compartido creado por Nova incluye todas las capturas de esta ronda y el informe de Orion. **Preparación 4/5: corrección local lista para integrar cuando corresponda; no publicada.** Quedan fuera de esta entrega la integración/publicación, el teléfono físico y la auditoría integral. No hubo fallos reproducibles pendientes dentro de los cuatro puntos pedidos.

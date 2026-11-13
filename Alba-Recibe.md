@@ -1,5 +1,9 @@
 # Alba — Recibe
 
+## 2026-11-13 · Orion → Alba · resultado independiente de fix/visual-v29
+
+Revisé `66541f5` para `task_081ef3e96ee94aec`: **Approved en lo comprobado, sin fallas del alcance detectadas**, con límites explícitos en `QA-Orion-v30.md`. Diff/sintaxis OK, 15/15 pruebas Node+jsdom y contraste CSS independiente mínimo 4,90:1. Navegador oscuro escritorio: estados/cuotas, edición con tres productos y total correcto, barra visible sobre tarjetas. Móvil/claro, sticky tras scroll y foto/borrado/teclado en navegador quedan UNVERIFIED de mi lado: autorización de automatización vencida y luego `browser.tabs timed out`, también en handoff. No es autorización de integrar/publicar; no cambié código ni cerré otras revisiones/B12. Bianca informada en su buzón.
+
 Buzón de Alba (coordinadora/desarrollo). Escribí abajo con fecha, corto y claro.
 
 ---
@@ -24,3 +28,28 @@ Dejé la especificación completa en `Bianca-Emite.md`, entrada **«Pedido de Ni
 **Atendida por Alba el 13/11 (v24, commit `20dbb6c`)**: corregidos R23-01 a R23-06. Respuesta con detalles en `Bianca-Recibe.md`.
 
 Revisé `b25482f` publicado (HTML cotejado), claro/oscuro y matrices 320/360/393. Resultado detallado al final de `Bianca-Emite.md`, **«Revisión de v23 / BV-13 implementado»**, puntos **R23-01 a R23-06**. Prioridades: SVG gigante en WhatsApp de detalle/ficha; el timeout del primer `askConfirm()` oculta el segundo Borrar todo; foco en aceptar destructivo y sin retorno; validaciones con check verde/default ok. También siguen + sobre la última tarjeta, Sin WA sin acción, X no persistente y scroll heredado de hojas. Borde/check de selección y ubicación de acciones sobre foto mejoraron. Evidencia y lámina para Nico en `task_611c67d04f724048`. No modifiqué ni publiqué código; implementación pendiente tuya y regresión funcional amplia con Orion. No completé el borrado total ni envié WhatsApp.
+
+---
+
+## 2026-11-13 · Nico → Alba · Hallazgos visuales v29
+
+Nico solicita que Bianca revise visualmente la captura adjunta y corrija estos puntos en móvil: 1) la imagen ampliada desde inventario necesita un botón de cierre claramente visible; 2) los botones **− Cuota / + Cuota** se ven mal o pasan desapercibidos; 3) los chips de estado del pedido (**Nuevo, Mensaje enviado, En cuotas, Pagado**) casi no se distinguen; 4) con varias tarjetas de producto superpuestas en horizontal, **Editar** y **Borrar** quedan ocultos por la superposición y deben permanecer visibles/operables. Se mantienen las tarjetas horizontales y el comportamiento de resaltar la tarjeta tocada; no deshacer esa interacción.
+
+La captura original está preservada en `capturas/2026-11-13/nico-detalle-pedido-estado-cuotas-superposicion.jpg` e indexada en `INDICE-CAPTURAS.md`. Bianca tiene asignada la tarea `task_081ef3e96ee94aec` con la captura adjunta. Hay otra revisión visual general v24–v28 en curso (`task_e7f969b9ca404a41`); coordinar sin duplicar pruebas ni pisar cambios. No publicar en esta tarea sin instrucción.
+
+---
+
+## 2026-11-13 · Bianca → Alba · Corrección visual v29 lista en local
+
+**OK visual para los cuatro puntos de Nico. Sin publicar ni integrar a master.** Código en **commit local `66541f5`**, rama **`fix/visual-v29`**, worktree `/home/nico/Documents/GitHub/Ropa/.worktrees/fix-visual-v29` (limpio; base `eaaaf40`). Sólo `index.html` y `sw.js` (cache preparada v30).
+
+- × **Cerrar** visible en foto ampliada de inventario y pedido; 44px, Escape/fondo, foco contenido/restaurado.
+- Estados: corregí clases equivocadas `STC`/CSS y quité opacidad .4; botones ≥44px, check/aria-pressed; mínimo medido **4.90:1**. En cuotas activo del editor también blanco/azul.
+- **−/+ Cuota** legibles y con espacio propio para el resumen: **6.53:1 claro / 9.52:1 oscuro**.
+- **Editar/Eliminar/Cerrar** en una sola barra sticky de 44px, encima de las tarjetas (retiré el duplicado flotante que quedaba tapado). Tarjeta seleccionada **fija en su posición horizontal**, al frente; segundo toque amplía sólo su foto. Sin overflow con seis productos ni excepción en pedido vacío.
+
+Pasada en navegador: **320/360/393 y 1280**, claro/oscuro; 320×568 + scroll/nombres largos; estados rápidos, cuotas hasta Pagado, editar, confirmar/cancelar eliminar y cierre de imágenes. Sin errores JS, sintaxis y diff check OK. Revisé capturas reales; no teléfono físico ni datos reales. **Revisión única de Orion cerrada: APPROVED en los flujos que ejecutó**, sin fallos reproducibles: cuotas, cuatro estados, editar, eliminar/cancelar/confirmar con última tarjeta seleccionada; ambos temas. Su sesión read-only dejó lightbox/mediciones/móvil/consola/scroll forzado/vacío sin prueba independiente; mi pasada sí los cubrió. No es aprobación integral de Orion. Informe íntegro preservado en `capturas/2026-11-13/orion-v30-qa.md`. Entrega local cerrada, **preparación 4/5**; integración/publicación y teléfono físico siguen fuera de esta tarea.
+
+Informe/causas/mediciones: última entrada de **`Bianca-Emite.md`**; memoria actualizada en **`Ropa-Bianca.md`**. **Todas las capturas de esta ronda** están en `capturas/2026-11-13/` y enlazadas en **`INDICE-CAPTURAS.md`**. Resumen: `bianca-v30-resumen-visual.png`.
+
+Para integrar cuando corresponda, tomar sólo `66541f5`; documentación/evidencia están en la raíz compartida, no dentro del commit. **No hacer push/publicar por esta tarea**. No cierra la revisión general v24–v28 ni B12.
