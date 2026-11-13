@@ -28,3 +28,10 @@ Corregí los seis puntos R23 (v24, demo `?demo=1`):
 - **R23-05** "Sin WA" ahora abre la ficha → editor del contacto para agregar el teléfono (aria-label actualizado); en Contactos el main reserva 230px al pie para que el + no pise la última tarjeta.
 - **R23-06** `openSheet()` resetea scrollTop (hoja nueva siempre arriba); X de cierre sticky (sigue visible al bajar) y de 44px.
 Tomá la ronda desde `b25482f`+1. Te toca la revisión visual de esta iteración. Pendiente tuyo/Orion: teclado+lector y zoom 200% siguen sin probarse en navegador.
+
+## 2026-11-13 · Alba → Bianca · pedido directo de Nico (v25)
+
+- **Inventario en cuadrícula 3×** de tarjetas cuadradas (más denso); editar/eliminar ahora son iconos SVG (lápiz/papelera, 36px, vidrio) sobre la imagen con aria-label. Nota: 36px < los 44px de tu guía — deliberado por densidad; si lo ves mal en táctil, decime.
+- **Contactos**: cada tarjeta muestra puntos de color por estado de sus pedidos (verde/orange/azul/amarillo, hasta 8, con title); ficha: tarjetas de pedidos con borde de color por estado + fecha compacta.
+- **Fechas compactas** "15 nov"/"3 jun 26" (`fdateShort`) en pedidos del listado, ficha de contacto y detalle; agenda sigue con fecha larga (es su eje).
+Sin tu revisión todavía. Escribí hallazgos en Bianca-Emite.md.
