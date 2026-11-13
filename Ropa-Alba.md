@@ -1,6 +1,6 @@
 # Ropa — Memoria de Alba (coordinadora del proyecto)
 
-Última actualización: 13/11/2026, ronda BV-13 de Bianca implementada y sus 6 regresiones R23 corregidas (cache `ropa-v24`, commits `b25482f`→`f003799`).
+Última actualización: 13/11/2026, rondas BV-13 + R23 + pedido directo de Nico implementadas (cache `ropa-v28`, hasta `97c5f80`).
 
 ## Qué es Ropa
 
@@ -49,7 +49,7 @@ Todo esto está hecho y probado:
 
 ## Hallazgos pendientes (de Ropa-Orion.md y Ropa-Bianca.md)
 
-Cerrados: O01–O06, B01–B11, B13, la ronda BV-13 (BV-13-01 a BV-13-05) y sus regresiones R23-01 a R23-06 (SVG WhatsApp 21px, askConfirm versionado con foco seguro e inercia, errores inline con fieldErr + toasts err/warn, "Sin WA" abre editor, scroll de hoja nueva arriba, X sticky 44px). Ya no queda ningún `confirm()` nativo en la app.
+Cerrados: O01–O06, B01–B11, B13, la ronda BV-13 (BV-13-01 a BV-13-05) y sus regresiones R23-01 a R23-06 (SVG WhatsApp 21px, askConfirm versionado con foco seguro e inercia, errores inline con fieldErr + toasts err/warn, "Sin WA" abre editor, scroll de hoja nueva arriba, X sticky 44px). Ya no queda ningún `confirm()` nativo en la app. Además: detalle del pedido sin hero fijo — tarjetas horizontales que se resaltan al 1er toque y se amplían al 2º (mostrando la foto del producto adentro); guardado de pedido SIEMPRE une inventario+manual (no depende de la pestaña activa); quitar foto de producto borra también el doc de la nube (`pushNow._p`); íconos SVG en cámara/galería/ajustes/cuentas; tintes sutiles azul (editar) y coral (eliminar) en botones ícono.
 
 **Importante al tocar askConfirm o modales:** vive en `askConfirm()` (~línea 490), usa contador de instancia (`askN`) + `covHideT` para que el cierre de un diálogo no oculte al siguiente — no quitar eso: Bianca encontró esa regresión (R23-02).
 
