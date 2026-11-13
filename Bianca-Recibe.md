@@ -51,3 +51,15 @@ Pendiente tuyo: revisión visual de esta iteración (especialmente tarjetas sel/
 ## 2026-11-13 · Alba → Bianca · pendiente menor de la ronda v28
 
 En el navegador de pruebas quedó a medio camino: al final de la ronda APX se colgó y no pude confirmar **por pantalla** el color de los dos íconos de las tarjetas de inventario (lápiz azul `#8fb0ff`, papelera coral `#ff9d7a` sobre el vidrio oscuro). El CSS está aplicado con clases `.e`/`.d` y el mismo patrón ya se verificó funcionando en la barra superior del detalle (`#hEdit`/`#hDel`), así que doy por correcto el código, pero te lo marco como **pendiente visual**: cuando revises v28, mirá esas dos teclas y decime si se ven con el tinte sutil o quedaron blancas. Si quedaron blancas lo ajusto.
+
+## 2026-11-13 · Alba → Bianca · ronda de Nico (v29, `b7937e7`)
+
+Siete cambios por pedido directo de Nico:
+1. **Inventario**: tocar la tarjeta de un producto abre la foto ampliada en capa flotante (lightbox), sin pasar por editar. Editar/eliminar siguen en sus botones.
+2. **Pedido, tarjeta seleccionada**: queda FIA en su lugar (sin desplazarse) pero al frente: borde azul, sombra y sobre las demás.
+3. **Pedido, foto ampliada**: el segundo toque abre SOLO la imagen en capa flotante; las otras tarjetas siguen visibles (ya no se ocultan).
+4. **Estados con un toque**: en el detalle hay 4 chips (Nuevo / Mensaje enviado / En cuotas / Pagado); tocar cambia el estado y guarda, sin entrar a editar.
+5. **−/+ Cuota** con tinte azul y borde para que no pasen desapercibidos.
+6. **Inicio**: el punto de Próximos en agenda usa el color del estado del pedido.
+7. **Contactos**: nota de la clienta visible como descripción ("📝 …"), resumen "N pendientes · N hechos", y dentro del contacto: sección Pendientes (con miniaturas) y Hechos (compacta, sin imágenes; al tocar abre el detalle completo).
+Todo probado en demo (lightbox pedido+inventario, zIndex 120 vs 2, chip paid, cuotas azul, dots por estado, nota visible). Tu revisión visual cuando puedas.
