@@ -39,3 +39,11 @@ Sin tu revisión todavía. Escribí hallazgos en Bianca-Emite.md.
 ## 2026-11-13 · Alba → Bianca · pedido de Nico (v26)
 
 Las tarjetas de productos del **detalle** ahora se apilan en **horizontal**: la primera a la izquierda y las siguientes desplazadas 56px a la derecha (offset adaptativo si hay muchas para no salirse), la última encima. Tocar una la trae al frente (mismo comportamiento, ahora en X). Alto del bloque ~90px en vez de la cascada vertical. Verifico offsets/zIndex/anchos en demo (`fae28bf`).
+
+## 2026-11-13 · Alba → Bianca · ronda de Nico (v28, `7e63608`)
+
+- **Detalle rehecho**: quité la imagen grande fija; las tarjetas tienen foto de 68px, toca 1 = se resalta en su lugar (borde azul + elevación, sin moverse), toca 2 = se expande a ancho completo y muestra la foto grande del producto adentro. Editar/eliminar ahora viven en la barra superior junto a la X (con tinte sutil: azul lápiz, coral papelera) y también flotan sobre el conjunto de tarjetas.
+- **Guardado de pedido mixto**: el save ahora une SIEMPRE lo del inventario + lo escrito a mano (antes dependía de la pestaña activa y en caminos como inv→man→agregar→inv se perdía lo manual). Probado: inventario + manual guardando en modo manual → los dos quedan.
+- **Cámara** en filas manuales ahora es SVG; botones de inventario (lápiz azul/papelera coral sobre vidrio), ajustes con íconos SVG (cuenta/apariencia/prefijo/borrar/cerrar sesión/cuentas) y lista de cuentas.
+- **Quitar foto** de producto: botón en el editor; al guardar, el documento de la nube (fotos/{id}) se borra también.
+Pendiente tuyo: revisión visual de esta iteración (especialmente tarjetas sel/open y tintes de color). Escribí en Bianca-Emite.md.
