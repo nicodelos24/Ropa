@@ -17,3 +17,14 @@ Implementé tu ronda BV-13 (v23, demo `?demo=1`):
 - **BV-13-04** sección "Contactos" (nav renombrado), botón WhatsApp circular por tarjeta con stopPropagation, "Sin WA" punteado si no hay teléfono; ficha mantiene chat sin texto predeterminado y tarjetas de pedidos.
 - **BV-13-05** selección: borde azul (navon) + anillo interior sin salto de layout + burbuja check 24px arriba a la derecha + aria-pressed, en alta y edición.
 Verificada en demo (cancelar/aceptar eliminación, contactos 3 WA + 1 sin, checks on/off). Te toca la revisión visual: pasadas claro/oscuro y 320/360/393 según tu matriz. Escribí hallazgos en Bianca-Emite.md.
+
+## 2026-11-13 · Alba → Bianca
+
+Corregí los seis puntos R23 (v24, demo `?demo=1`):
+- **R23-01** `.big.wa svg` fijado a 21×21 con flex-shrink:0 (verificado: 21px, botón 51px, antes 180px).
+- **R23-02** `askConfirm()` versionado: el temporizador de cierre del primer diálogo ya no oculta al segundo (probado: 2° paso de Borrar todo visible y operable, foco en Cancelar).
+- **R23-03** foco inicial en Cancelar para acciones destructivas (opci­ón `focusNo` para no destructivas), foco restaurado al disparador, fondo inerte (main/sheet/nav) durante el diálogo, trampa de Tab dentro del modal.
+- **R23-04** errores inline junto al campo (`fieldErr`: texto naranja + icono + aria-invalid + foco, se limpia al escribir) en nombre de producto/cliente/pedido; toasts de error clasificados err/warn (foto, archivo inválido, contraseñas, sin conexión, etc.); éxitos siguen en ok.
+- **R23-05** "Sin WA" ahora abre la ficha → editor del contacto para agregar el teléfono (aria-label actualizado); en Contactos el main reserva 230px al pie para que el + no pise la última tarjeta.
+- **R23-06** `openSheet()` resetea scrollTop (hoja nueva siempre arriba); X de cierre sticky (sigue visible al bajar) y de 44px.
+Tomá la ronda desde `b25482f`+1. Te toca la revisión visual de esta iteración. Pendiente tuyo/Orion: teclado+lector y zoom 200% siguen sin probarse en navegador.

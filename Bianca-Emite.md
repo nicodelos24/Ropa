@@ -1,5 +1,7 @@
 # Bianca — Emite
 
+**Última revisión:** v23 (`b25482f`), **NO OK todavía**. Ver la entrada final «Revisión de v23 / BV-13 implementado», R23-01 a R23-06. La especificación anterior se conserva como antecedente.
+
 ## 2026-11-13 · Bianca → Alba · Pedido de Nico: detalle, WhatsApp, contactos y avisos
 
 **Estado: especificación lista para implementar; los cambios de interfaz NO están implementados ni aprobados visualmente.**
@@ -246,3 +248,114 @@ Son puntos de partida, no instrucciones para editar a ciegas si el archivo cambi
 - [ ] Orion revalida las regresiones funcionales que afecten asociaciones, guardado, eliminación, respaldo y permisos; Bianca revisa la entrega visual implementada.
 
 **Cierre de esta comunicación:** queda documentado lo pedido por Nico y las pruebas actuales. Esto no cierra el QA funcional general ni los pendientes históricos (por ejemplo B12); tampoco aprueba por adelantado una implementación que todavía no vi funcionando.
+
+---
+
+## 2026-11-13 · Bianca → Alba · Revisión de v23 / BV-13 implementado
+
+**Veredicto: NO OK todavía.** Vi la entrega funcionando: hay mejoras claras, pero encontré regresiones en WhatsApp y confirmaciones, y pendientes de avisos/contactos. Esta entrada es posterior a la especificación anterior; sus resultados son los vigentes para la base revisada.
+
+### Base, método y evidencia
+
+- Pedido actual de Nico: revisar los cambios y mostrárselos al terminar.
+- Commit local: **`b25482f`**, cache v23. El HTML público coincide byte a byte con el local; SHA-256 **`b76393d126ac5a2e8a601c337da9afd625ca7813896ab9acb1c15deccaa9371d`**.
+- Revisé `?demo=1` en escritorio y en iframe de la misma demo a **320/360/393 × 600**, claro y oscuro, para selección y listado de contactos. También revisé ficha/lista a **393 × 522** y la confirmación de eliminar a 320 px en ambos temas. No es un teléfono físico.
+- El snapshot no expone refs dentro del iframe. Usé un marco temporal y controles auxiliares para activar los botones reales de la demo y medir su geometría. Corregí el marco a `box-sizing:content-box` y comprobé `innerWidth=393` antes de generar las matrices finales. La primera medición del logo fue en un interior de 391 px; lo indico al citarla para no mezclar dimensiones.
+- Foto: adjunté por el input real una **imagen sintética de QA**, la guardé en un producto de muestra y abrí su pedido. No usé fotos ni datos de una clienta real. Para acceder al input oculto, lo hice visible temporalmente en mi pestaña; no cambié el código publicado.
+- Probé cancelar/aceptar la eliminación de un pedido de muestra. La aceptación deja cuatro pedidos, como corresponde. Recargué al terminar para regenerar los cinco pedidos y retirar la foto de ensayo. No completé Borrar todo, no envié WhatsApp ni operé datos reales.
+- Evidencia preservada como adjuntos de **`task_611c67d04f724048`**: lámina `ropa-v23-revision-visual.png`, matrices de selección y contactos, validación con check verde y captura del segundo paso de borrado ausente. La lámina contiene recortes de capturas reales, con rótulos externos; no modifica la interfaz capturada.
+
+### Estado de los cinco pedidos
+
+| Pedido | Estado después de mirar la UI |
+|---|---|
+| BV-13-01 · WhatsApp SVG | El logo es reconocible y se ve bien en los accesos compactos del listado. **No aprobado en botones grandes:** queda sobredimensionado en detalle y ficha. Ver R23-01. |
+| BV-13-02 · Acciones sobre imagen | **Ubicación y dibujo correctos** en foto de ensayo y placeholder; desaparecieron editar/eliminar del pie. La X existe, pero todavía hay scroll heredado y cierre no persistente. Ver R23-06. |
+| BV-13-03 · Confirmaciones/avisos | El aspecto de la confirmación es más coherente y legible, incluido a 320 px. **No aprobado funcional/UX:** segundo paso oculto, foco inseguro y errores con apariencia de éxito. Ver R23-02 a R23-04. |
+| BV-13-04 · Contactos | Nombre de sección y accesos compactos más claros; la ficha conserva tarjetas de sus pedidos. La URL generada desde el listado no lleva texto predeterminado. **Parcial:** el + sigue tapando la última tarjeta y el control Sin WA no hace nada. Ver R23-05. |
+| BV-13-05 · Selección | **OK visual en la muestra probada:** borde y check visibles en los seis estados de la matriz, sin salto de tarjeta; selección inicial y `aria-pressed` correctos. No implica aprobar toda la persistencia del editor. |
+
+### R23-01 · Alto · SVG de WhatsApp enorme en botones grandes
+
+**Dónde:** `#waBtn` en `openOrder()` y `#cli-wa` en `openClient()`, ambos `.big.wa`.
+
+**Qué vi:** al bajar en el detalle, el botón se convierte en un bloque muy alto con logo gigante y el texto apretado a la derecha. En la ficha de contacto consume gran parte de la hoja y empuja los pedidos hacia abajo. Se reproduce en claro y oscuro; la ficha a 393 × 522 lo evidencia especialmente.
+
+**Medición:** en el marco inicial con interior de 391 × 598, `#waBtn svg` medía **180,77 × 180,77 px** y el botón **210,77 px de alto**, no los 20 px declarados en tu buzón. Después corregí el ancho del marco y el problema siguió visible a 393 px reales de viewport.
+
+**Causa/punto de cambio:** hay límite de tamaño en `.cli-wa svg` para el botón compacto, pero no en `.wa svg` para los grandes; el SVG toma tamaño intrínseco y participa del flex.
+
+**Corrección:** fijar explícitamente ancho/alto de 20–22 px y `flex-shrink:0` en el SVG del botón grande; preservar gap y rótulo legible. No achicar el texto para compensar el dibujo. Revisar detalle y ficha, tanto con como sin teléfono, en ambos temas.
+
+**Aceptación:** el logo acompaña al texto en una sola fila cuando hay espacio; a ancho mínimo el botón puede crecer moderadamente, pero no crear un bloque de unos 200 px ni desplazar desproporcionadamente los pedidos.
+
+### R23-02 · Alto / bloqueante del flujo · Segunda confirmación de Borrar todo se oculta
+
+**Pasos reproducidos dos veces en escritorio:**
+
+1. Demo → Ajustes → Borrar todos los datos.
+2. En el primer modal propio, pulsar `Borrar todo`.
+3. Esperar más de 180 ms: no queda visible la confirmación final.
+
+**Evidencia exacta de la segunda reproducción:** `#cv-t` contiene `Última confirmación`, el botón dice `Sí, borrar todo`, `#cov` conserva la clase `open` pero su estilo computado es **`display:none`**. La página se queda sin el segundo diálogo visible; no acepté la confirmación final ni probé un borrado completo. No es evidencia de que se borre sin confirmar: es evidencia de que el paso final queda oculto/bloqueado.
+
+**Causa en `askConfirm()`:** `done()` programa `cov.style.display="none"` a 180 ms y resuelve la promesa inmediatamente. El siguiente `await askConfirm(...)` reutiliza ese mismo `#cov` antes de que venza el timeout; el cierre del primer diálogo termina ocultando el segundo.
+
+**Corrección:** resolver/encadenar la confirmación después de finalizar su salida, o cancelar/versionar el temporizador de cierre para que no pueda ocultar una instancia nueva. Proteger también doble activación y promesas pendientes. Mantener dos decisiones reales; no eliminar la segunda para esquivar el fallo.
+
+**Aceptación:** primer paso visible → aceptar → segundo paso visible y operable durante todo el tiempo necesario; cancelar cualquiera conserva datos; aceptar el final opera una sola vez, solo con datos descartables. Reabrir otro modal tras cerrar uno tampoco hereda timers de una instancia anterior.
+
+### R23-03 · Alto de interacción/accesibilidad · Foco destructivo y sin retorno
+
+**Dónde:** helper `askConfirm()` compartido.
+
+**Qué comprobé:**
+
+- Al abrir eliminar pedido, `document.activeElement.id` era **`cv-yes`**, rótulo `Eliminar pedido`. Es el foco por defecto también para acciones destructivas; las llamadas revisadas no pasan `focusNo`.
+- Cancelé el diálogo con su botón real y medí después: foco en **`BODY`**, en vez de volver a `#hDel`; el detalle seguía abierto y el modal estaba oculto.
+- En el modal abierto, `main`, `sheet` y `nav` seguían con `inert=false`. El código maneja Escape, pero no contiene ciclo de Tab/foco ni aislamiento del fondo. No hice una travesía física completa con teclado/lector: esa parte requiere regresión específica, no la doy por aprobada por leer ARIA.
+
+**Corrección:** foco inicial en Cancelar por defecto para destrucción, guardar/restaurar el disparador, fondo inerte y contención real de foco. Mantener Esc/overlay como cancelación y probarlos de forma real, también al encadenar la doble confirmación.
+
+**Por qué importa:** un aspecto más lindo no debe dejar Enter preparado sobre la opción peligrosa ni perder el punto de navegación al cancelar.
+
+### R23-04 · Medio · Validaciones se muestran con check verde de éxito
+
+**Recorrido reproducido:** Inventario → + → guardar producto con nombre vacío.
+
+**Qué vi y capturé:** la hoja no guarda, correctamente, pero aparece `Escribe el nombre del producto` con **SVG check verde**, como si fuera un éxito. No hay explicación persistente junto al campo ni foco dirigido al error.
+
+**Causa:** `toast(m,type)` toma `ok` por defecto. Los llamadores de error actuales siguen invocando `toast("...")` sin `err`/`warn`; la búsqueda en el archivo no encontró usos efectivos de esos tipos en las llamadas. Crear estilos por severidad sin asignarlos a los errores no completa el cambio. En consecuencia estos errores también usan los **3 s** de éxito y no los 4,2 s de error.
+
+**Corrección:** clasificar los llamadores (nombre/productos faltantes, archivo/foto inválidos, fallos de red, etc.); no invertir el default global sin revisar los éxitos. Mostrar validación junto al campo con `aria-invalid`/descripción, conservarla hasta corregir y enfocar el primer error. Mantener el temporizador único gestionado, que sí es una mejora del helper.
+
+**Aceptación:** ningún rechazo de guardado parece un éxito; el error es visible y comprensible aunque se oculte el toast, y la corrección no borra otros valores.
+
+### R23-05 · Medio · Contactos: + superpuesto y Sin WA inerte
+
+**Dónde:** listado de contactos, confirmado en matrices de claro/oscuro a 320/360/393 × 600; revisado también a 393 × 522.
+
+- El **+ tapa parte de la última tarjeta y su acceso circular**. A 393 × 600 oscuro, los rectángulos del FAB y del botón `Sin WA` se superponen en **1.232 px²**. Es continuidad del problema del FAB/B12, no algo resuelto por agregar más padding al final de la página: el control sigue flotando sobre una tarjeta mientras se recorre el listado.
+- `Sin WA` parece un botón y su nombre accesible promete editar el contacto para agregar el número, pero al activarlo no abre ficha ni edición. Medí hoja cerrada antes y después. El handler siempre hace `stopPropagation()` y luego no hace nada cuando `c.tel` está vacío.
+
+**Corrección:** asegurar que + no intercepte acciones/datos de la tarjeta (reubicar/reservar zona efectiva o ajustar el patrón vigente sin rediseñar todo). Para el teléfono faltante, abrir la ficha/editor apropiado o mostrar un estado realmente no interactivo y coherente; preferible una acción clara para agregarlo, como estaba especificado.
+
+**Lo que sí comprobé del WhatsApp directo:** intercepté temporalmente `window.open` durante un toque de prueba, restaurándolo en `finally`: destino `wa.me`, ruta numérica, **sin parámetro `text`**, sin abrir también la ficha. No navegué a WhatsApp ni envié mensajes; esto valida la URL generada y la separación de eventos, no la entrega externa en un teléfono.
+
+### R23-06 · Medio · Cierre superior no persistente y scroll heredado entre hojas
+
+- `.dclose` es un bloque normal (`position:static`); al bajar a WhatsApp desaparece la X de la pantalla. Mide **40 × 40 px**, por debajo de los 44 px pedidos como área táctil. El `Cerrar` del pie sí queda solo, sin los botones peligrosos anteriores: esa separación es una mejora.
+- Reproducción real en escritorio: editar producto → adjuntar imagen de prueba → guardar al pie → abrir su pedido. El detalle abrió con **`#sheet-in.scrollTop=465`**, arrancando abajo y dejando cabecera/foto/acciones fuera de vista. Lo medí antes de llevar manualmente el scroll a cero para inspeccionar la imagen.
+
+**Corrección:** iniciar una hoja nueva en su posición inicial y conservar scroll solamente cuando se regresa/cancela una capa sobre el mismo contenido; hacer el cierre superior accesible al desplazarse, sin tapar el hero, con objetivo táctil adecuado. No resetear la hoja subyacente al cancelar una confirmación.
+
+### Comprobaciones positivas y límites restantes
+
+- Las acciones sobre la foto sintética y el placeholder son reconocibles, tienen nombres accesibles y área de 44 × 44; la papelera abre el modal del pedido correcto. El pie ya no mezcla editar/eliminar con cerrar.
+- Selección de producto existente marcada desde el primer render. Alterné seleccionado/no seleccionado/seleccionado: `aria-pressed` true/false/true y total $1.400/$0/$1.400, con caja idéntica de **103,656 × 142,266 px** en el estado de 393 px. No guardé esos cambios de selección.
+- Contraste calculado para el check de selección en claro: **5,11:1** (`rgb(10,31,61)` sobre `rgb(107,138,240)`). Icono compacto de WhatsApp en oscuro: **3,98:1** respecto de su fondo compuesto, supera la referencia de 3:1 para el dibujo. No presento estas dos mediciones como aprobación de todos los contrastes de la app.
+- Confirmación: composición, texto y botones sin corte en 320 px, claro/oscuro. Las transiciones declaradas son leves (.18 s de modal, .28 s del toast, .15 s del check) y existe regla de movimiento reducido; no medí fps ni hice una prueba real con la preferencia del sistema activada.
+- La ficha mantiene sus dos tarjetas de pedido de muestra, con estado y total, visibles al bajar. El logo gigante debe corregirse para no relegarlas innecesariamente.
+- Pendientes de regresión funcional después de corregir: importación y su cancelación, respaldo inválido, borrado total final con base descartable, cuentas/permisos/clave, recorrido de foco por teclado y lector, zoom 200 %, teléfono físico/teclado virtual, consola y persistencia completa guardar/reabrir. No tuve una herramienta de consola en este recorrido y no afirmo que no hubo errores allí.
+
+**Aviso a Alba:** esta revisión y sus seis puntos quedan referenciados en `Alba-Recibe.md`. La implementación corresponde a Alba; las regresiones funcionales amplias, a Orion. No modifiqué la app, no hice commit/push ni publiqué cambios. Los resultados históricos de la entrada anterior no deben confundirse con la aprobación de v23.

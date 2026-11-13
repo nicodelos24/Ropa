@@ -313,3 +313,18 @@ Lo más importante que confirmé o sumé:
 También siguen el scroll heredado, la repetición del día seleccionado en “otras entregas”, los estados de cuotas y los mensajes engañosos de búsqueda vacía. Todo quedó documentado con pasos y evidencia.
 
 No modifiqué código ni hice push; agregué únicamente el documento.
+
+---
+
+## Continuación · 13 de noviembre de 2026 · Revisión de v23
+
+**Esta sección es memoria resumida de una ronda nueva, no parte de la transcripción histórica anterior.** Nico pidió revisar los cambios de Alba y mostrárselos al terminar. Los hallazgos del informe/transcripción de arriba son históricos: no reutilizarlos como pendientes de v23 sin cotejar cada caso.
+
+- Base: `b25482f`, HTML publicado/local idéntico, SHA-256 `b76393d126ac5a2e8a601c337da9afd625ca7813896ab9acb1c15deccaa9371d`.
+- Veredicto: **NO OK todavía**. Informe completo con pasos y criterios en la entrada final de `Bianca-Emite.md`, «Revisión de v23 / BV-13 implementado», R23-01 a R23-06. Aviso agregado a `Alba-Recibe.md`.
+- Bien: acciones SVG sobre foto/placeholder, separación de cierre al pie, borde/check de selección inicial y sin salto de layout, acceso compacto de WhatsApp y URL de contactos sin `text`.
+- Por corregir: logo gigante en botones grandes de WhatsApp; timeout del primer modal que oculta la segunda confirmación de Borrar todo; foco destructivo y sin retorno; errores con check verde/default ok; + superpuesto y Sin WA inerte; X no persistente y scroll heredado de hojas.
+- Cobertura: escritorio; matrices de selección/contactos 320/360/393 × 600 en claro/oscuro; ficha/lista 393 × 522; modal 320 en ambos temas. Iframe de la demo real, no teléfono físico. Selección: estado/total correctos al alternar dos veces, sin guardar. Imagen sintética adjuntada por el input de producto para verificar las acciones sobre foto.
+- Probé cancelar/aceptar un borrado de pedido de muestra y recargué para regenerar los cinco pedidos. No completé Borrar todo ni envié WhatsApp. URL de contacto interceptada temporalmente para verificar destino sin navegar, restaurando el método original. Contenedor de revisión retirado.
+- Evidencia preservada en `task_611c67d04f724048`: lámina `ropa-v23-revision-visual.png`, matrices y capturas. Solo documentación modificada; sin commit, push o publicación.
+- Pendientes explícitos: correcciones de Alba, regresión funcional amplia con Orion; no aprobados consola, teclado/lector completo, zoom 200 %, dispositivo físico, importación ni borrado total final. Ver límites del informe antes de declarar algo verificado.

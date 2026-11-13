@@ -267,9 +267,13 @@ nav button.on{color:var(--navon)}
   display:flex;align-items:center;justify-content:center;cursor:pointer;
 }
 .hacts button svg{width:20px;height:20px}
-.dclose{display:flex;justify-content:flex-end;padding:4px 2px 0}
-.dclose button{width:40px;height:40px;border-radius:13px;background:var(--card2);color:var(--mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dclose{position:sticky;top:-10px;z-index:6;display:flex;justify-content:flex-end;padding:2px;margin:0 -18px 2px;padding-right:10px;padding-left:10px;background:var(--bg)}
+.dclose button{width:44px;height:44px;border-radius:13px;background:var(--card2);color:var(--mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .dclose button svg{width:18px;height:18px}
+.big.wa svg{width:21px;height:21px;flex-shrink:0}
+#main.pad-xl::after{height:230px}
+.ferr{display:flex;gap:6px;align-items:center;color:var(--c-orange);font-size:12.5px;font-weight:600;margin-top:6px}
+.ferr svg{width:14px;height:14px;flex-shrink:0}
 .danger{color:var(--c-red)!important}
 /* pantalla de cuenta */
 #auth{position:fixed;inset:0;z-index:80;background:var(--bg);overflow-y:auto;padding:24px 20px calc(30px + env(safe-area-inset-bottom))}
@@ -477,6 +481,16 @@ function load(){
 function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
 function fmt(n){ return "$"+Number(n||0).toLocaleString("es-MX"); }
 function total(o){ return (o.items||[]).reduce((s,i)=>s+(Number(i.price)||0)*(Number(i.qty)||1),0); }
+function fieldErr(input,msg){
+  input.setAttribute("aria-invalid","true");
+  const old=input.parentElement.querySelector(".ferr");
+  if(old)old.remove();
+  const d=document.createElement("div");
+  d.className="ferr";d.setAttribute("role","alert");d.innerHTML=`${ICON.alert}<span>${esc(msg)}</span>`;
+  input.after(d);input.focus();
+  input.addEventListener("input",()=>{input.removeAttribute("aria-invalid");d.remove();},{once:true});
+  return d;
+}
 let toastT=null;
 function toast(m,type){
   const t=document.getElementById("toast");
@@ -485,9 +499,12 @@ function toast(m,type){
   t.innerHTML=`${(type==="err"||type==="warn")?ICON.alert:ICON.check}<span>${esc(m)}</span>`;
   toastT=setTimeout(()=>t.classList.remove("show"),(type==="err"||type==="warn")?4200:3000);
 }
+let covHideT=null,askN=0;
 function askConfirm(o){
   return new Promise(res=>{
-    const cov=document.getElementById("cov"),box=document.getElementById("cbox");
+    const cov=document.getElementById("cov");
+    const my=++askN;
+    clearTimeout(covHideT);covHideT=null;
     const danger=o.danger===undefined?true:!!o.danger;
     document.getElementById("cv-ic").className="cic "+(danger?"danger":"info");
     document.getElementById("cv-ic").innerHTML=ICON.alert;
@@ -496,20 +513,35 @@ function askConfirm(o){
     const yes=document.getElementById("cv-yes"),no=document.getElementById("cv-no");
     yes.textContent=o.ok||"Aceptar";
     yes.className="cbtn-yes"+(danger?"":" neutral");
+    const trigger=document.activeElement;
+    const back=[document.getElementById("main"),document.getElementById("sheet"),document.querySelector("nav")];
+    back.forEach(el=>{ if(el)el.inert=true; });
     cov.style.display="flex";requestAnimationFrame(()=>cov.classList.add("open"));
+    let settled=false;
     const done=v=>{
+      if(settled)return; settled=true;
       cov.classList.remove("open");
-      setTimeout(()=>cov.style.display="none",180);
+      covHideT=setTimeout(()=>{ if(my===askN)cov.style.display="none"; },180);
       document.removeEventListener("keydown",onKey);
+      back.forEach(el=>{ if(el)el.inert=false; });
+      if(trigger&&trigger.focus)try{trigger.focus();}catch(e){}
       no.onclick=yes.onclick=cov.onclick=null;
       res(v);
     };
     no.onclick=()=>done(false);
     yes.onclick=()=>done(true);
     cov.onclick=e=>{ if(e.target===cov)done(false); };
-    const onKey=e=>{ if(e.key==="Escape")done(false); };
+    const onKey=e=>{
+      if(e.key==="Escape"){done(false);}
+      else if(e.key==="Tab"){
+        const f=[no,yes];
+        const i=f.indexOf(document.activeElement);
+        if(e.shiftKey&&(i<=0)){e.preventDefault();f[1].focus();}
+        else if(!e.shiftKey&&(i<0||i===f.length-1)){e.preventDefault();f[0].focus();}
+      }
+    };
     document.addEventListener("keydown",onKey);
-    (o.focusNo?no:yes).focus();
+    (o.focusNo===undefined?danger:o.focusNo)?no.focus():yes.focus();
   });
 }
 function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
@@ -554,7 +586,7 @@ document.getElementById("themeBtn").onclick=()=>{
 };
 
 /* ---------- sheet ---------- */
-function openSheet(html){ document.getElementById("sheet-in").innerHTML=html; document.getElementById("sheet").classList.add("open"); }
+function openSheet(html){ document.getElementById("sheet-in").innerHTML=html; document.getElementById("sheet-in").scrollTop=0; document.getElementById("sheet").classList.add("open"); }
 function closeSheet(){ document.getElementById("sheet").classList.remove("open"); render(); }
 document.getElementById("sheet").onclick=e=>{ if(e.target.id==="sheet") closeSheet(); };
 
@@ -636,6 +668,7 @@ function render(){
     {negocios:"Panel del dueño de la app"}[view]||document.getElementById("subtitle").textContent;
 
   const main=document.getElementById("main");
+  main.classList.toggle("pad-xl",view==="clients");
   try{
     if(view==="negocios")return renderNegocios(main);
     if(view==="home")return renderHome(main);
@@ -817,7 +850,7 @@ function openInvEditor(it){
   };
   document.getElementById("inv-save").onclick=()=>{
     const name=document.getElementById("inv-name").value.trim();
-    if(!name){ toast("Escribe el nombre del producto"); return; }
+    if(!name){ fieldErr(document.getElementById("inv-name"),"Escribe el nombre del producto"); return; }
     it.name=name;
     it.price=Number(document.getElementById("inv-price").value.replace(/\D/g,""))||0;
     it.cat=cat;
@@ -836,9 +869,9 @@ function compressPhoto(file, cb){
       c.width=img.width*sc; c.height=img.height*sc;
       c.getContext("2d").drawImage(img,0,0,c.width,c.height);
       cb(c.toDataURL("image/jpeg",.72));
-    }catch(e){ toast("No se pudo procesar la foto"); }
+    }catch(e){ toast("No se pudo procesar la foto","err"); }
   };
-  img.onerror=()=>{ URL.revokeObjectURL(url); toast("No se pudo abrir la foto"); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); toast("No se pudo abrir la foto","err"); };
   img.src=url;
 }
 
@@ -860,7 +893,12 @@ function renderClients(main){
     el.onclick=()=>openClient(el.dataset.id);
     const w=el.querySelector(".cli-wa");
     const c=db.clients.find(x=>x.id===el.dataset.id);
-    w.onclick=e=>{ e.stopPropagation(); if(c&&c.tel)window.open(`https://wa.me/${waTel(c.tel)}`,"_blank"); };
+    w.onclick=e=>{
+      e.stopPropagation();
+      if(!c)return;
+      if(c.tel)window.open(`https://wa.me/${waTel(c.tel)}`,"_blank");
+      else{ openClient(c.id); setTimeout(()=>{const b=document.getElementById("cli-edit");if(b)b.click();},80); }
+    };
   });
 }
 function openClient(id){
@@ -1114,17 +1152,17 @@ function openEditor(orig, presetClient, presetDate){
   };
   document.getElementById("saveBtn").onclick=()=>{
     const cliente=document.getElementById("f-cliente").value.trim();
-    if(!cliente){ toast("Escribe el nombre del cliente"); return; }
+    if(!cliente){ fieldErr(document.getElementById("f-cliente"),"Escribe el nombre del cliente"); return; }
     let clean;
     if(mode==="inv"){
       clean=Object.keys(picked).map(iid=>{
         const inv=db.inventory.find(x=>x.id===iid);
         return {name:inv.name, price:Number(picked[iid].price)||inv.price||0, qty:picked[iid].qty||1};
       });
-      if(!clean.length){ toast("Elige productos del inventario"); return; }
+      if(!clean.length){ toast("Elige productos del inventario","warn"); return; }
     }else{
       clean=items.filter(i=>i.name.trim());
-      if(!clean.length){ toast("Agrega al menos un producto"); return; }
+      if(!clean.length){ toast("Agrega al menos un producto","warn"); return; }
       clean.forEach(i=>i.qty=i.qty||1);
       // productos escritos a mano: se guardan también en el inventario
       var nuevos=0;
@@ -1315,7 +1353,7 @@ function wireSettings(){
         db=Object.assign({theme:db.theme,prefijo:db.prefijo,usuarioId:db.usuarioId},d,clean);
         log("backup","Respaldo importado");
         save(); toast("Respaldo importado ✓"); view="orders"; render();
-      }catch(err){ toast("Archivo no válido"); render(); } };
+      }catch(err){ toast("Archivo no válido","err"); render(); } };
     r.readAsText(f);
   };
   document.getElementById("resetBtn").onclick=async()=>{
@@ -1342,7 +1380,7 @@ function openNewClient(){
   document.getElementById("nc-tel").oninput=e=>{ e.target.value=maskTel(e.target.value); };
   document.getElementById("nc-save").onclick=()=>{
     const name=document.getElementById("nc-name").value.trim();
-    if(!name){ toast("Escribe el nombre"); return; }
+    if(!name){ fieldErr(document.getElementById("nc-name"),"Escribe el nombre"); return; }
     db.clients.push({id:uid("c"),name,tel:document.getElementById("nc-tel").value.trim(),notas:document.getElementById("nc-notas").value.trim(),created:Date.now()});
     log("client_new",name);
     save(); closeSheet(); toast("Cliente guardado ✓");
@@ -1436,7 +1474,7 @@ function pushNow(){
     });
   };
   ref.collection("datos").doc("main").set(payload).then(pushPhotos)
-    .catch(()=>{ toast("Sin conexión: se enviará al reconectar"); });
+    .catch(()=>{ toast("Sin conexión: se enviará al reconectar","warn"); });
 }
 function save(){
   try{ localStorage.setItem(KEY,JSON.stringify(db)); }
@@ -1655,8 +1693,8 @@ function openChangePass(){
     <button class="big" id="cp-save" style="margin-top:14px">Guardar contraseña</button>`);
   document.getElementById("cp-save").onclick=async()=>{
     const p1=document.getElementById("cp1").value,p2=document.getElementById("cp2").value;
-    if(p1.length<6)return toast("Mínimo 6 caracteres");
-    if(p1!==p2)return toast("No coinciden");
+    if(p1.length<6)return toast("Mínimo 6 caracteres","err");
+    if(p1!==p2)return toast("Las contraseñas no coinciden","err");
     try{
       await auth.currentUser.updatePassword(p1);
       await fsdb.collection("usuarios").doc(auth.currentUser.uid).update({cambiarClave:false});
@@ -1683,7 +1721,7 @@ function renderNegocios(main){
       <button class="ghost" onclick="closeSheet()">Cancelar</button>`);
     document.getElementById("ng-save").onclick=async()=>{
       const n=document.getElementById("ng-name").value.trim();
-      if(!n)return toast("Escribí el nombre");
+      if(!n)return toast("Escribí el nombre","err");
       const code="ROPA-"+Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b%31]).join("");
       const ref=await fsdb.collection("negocios").add({nombre:n,codigo:code,activo:true,creado:Date.now(),por:FB.uid});
       await fsdb.collection("codigos").doc(code).set({tipo:"admin",negocioId:ref.id,usado:false,creado:Date.now()});
