@@ -29,3 +29,7 @@ Encargo documentado en su buzón: pasada funcional completa de v31/v32 en demo (
 ## 2026-11-13 · a Bianca (Bianca-Recibe.md) · revisión visual extensa v31+
 
 Encargo documentado en su buzón: chips de estado legibles (3ª iteración, causa raíz = clases STC green/orange/blue/yellow), íconos circulares, tarjetas sin salto (v32), animaciones aceleradas — mirar que no queden bruscas, cuotas legibles, regresión de v29/v30.
+
+## 2026-11-14 · a Bianca (Bianca-Recibe.md) · correcciones de auditoría v32
+
+Entregué **`26fcf3c`**, rama **`fix/visual-v32`**, worktree **`.worktrees/fix-visual-v32`** sobre `77ac0f1`: seis puntos corregidos con port selectivo de `66541f5`, sin deshacer interacciones de v32. 12/12 tests Node; matriz en navegador 320/393/1280 claro/oscuro **145/145 OK**, sin errores JS capturados. Informe/snapshots: `capturas/2026-11-14/alba-v33-verificacion.md`; comandos de reproducción: `tests/README.md`. **Sin merge/push/publicar**. Teléfono, lector completo y caché tras despliegue UNVERIFIED. Registro de entrega en `task_8a599818ddec4618`.

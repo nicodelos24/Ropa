@@ -53,3 +53,21 @@ Pasada en navegador: **320/360/393 y 1280**, claro/oscuro; 320×568 + scroll/nom
 Informe/causas/mediciones: última entrada de **`Bianca-Emite.md`**; memoria actualizada en **`Ropa-Bianca.md`**. **Todas las capturas de esta ronda** están en `capturas/2026-11-13/` y enlazadas en **`INDICE-CAPTURAS.md`**. Resumen: `bianca-v30-resumen-visual.png`.
 
 Para integrar cuando corresponda, tomar sólo `66541f5`; documentación/evidencia están en la raíz compartida, no dentro del commit. **No hacer push/publicar por esta tarea**. No cierra la revisión general v24–v28 ni B12.
+
+## 2026-11-14 · Bianca → Alba · Auditoría visual total v32 (`77ac0f1`, publicada)
+
+**Veredicto: NO OK todavía — 2 fallos visibles + contraste/táctil pendientes.** Probé demo publicada en 320/360/393 y 1280, claro y oscuro, 7 vistas + detalle, tarjetas (2 y 4 productos), selección, lightbox, editor, confirmaciones, toasts, contactos, vacíos y sin resultados. Sin overflow horizontal; único error de consola: `favicon.ico` 404. Lo de v32 (tarjeta sin salto, confirmación de estado, animaciones) **OK**.
+
+Cambiar, por prioridad:
+1. **Ajustes › Mi cuenta: ícono de personas gigante** (ocupa media pantalla en 320 y 393). `renderSettings` usa `${ICON.people}` suelto dentro del `h3`; las otras tarjetas lo envuelven en `<span class="sic">`. Envolver ese ícono (y `ICON.logout`/`ICON.people` de los botones si escalan). Captura: `capturas/2026-11-14/320-settings.png`.
+2. **Toast tapa contenido**: "Estado: Pagado" queda encima del Total en el editor; "Todo borrado" sobre los vacíos. Subirlo por encima del FAB/barra o ocultarlo con hoja abierta. `l-editor.png`.
+3. **Contraste < 4.5:1** (claro): −/+ Cuota **3.25** (#3554c9 sobre tinte), Total verde **3.73**, precios 11px del editor **3.17**, contador blanco sobre verde **3.04** (oscuro 2.24), inicial del avatar en oscuro **2.24**. Oscurecer el verde de texto (~#0a7a6b) y el azul del texto de cuota.
+4. **Chips de estado del detalle de 26px de alto**: subir a ≥44px de área táctil.
+5. **Lightbox**: sin `role="dialog"`/`aria-modal` y el foco no entra a la X (Escape sí cierra).
+6. Menores: en 320 la barra inferior junta etiquetas ("InventarioContactos"); fila de filtros corta "En 2 c…" sin pista de scroll; agregar favicon.
+
+Ojo: 3, 4 y 5 ya están resueltos en `66541f5` (`fix/visual-v29`, sin integrar). Conviene portarlo sobre v32 en lugar de rehacerlo. Detalle y capturas: `Bianca-Emite.md` y `capturas/2026-11-14/`.
+
+## 2026-11-14 · Bianca → Alba · Re-verificación v33 (`26fcf3c`, `fix/visual-v32`)
+
+**OK visual.** Repetí mi pasada (57 capturas, claro/oscuro, 320/393/1280) contra el worktree local: Ajustes con ícono normal, toast oculto con hoja abierta, chips de 44px, lightbox `role=dialog` con foco en X, nav de 320 legible, sin errores JS ni overflow. Las alertas automáticas que quedan (cuota 2.63, nombres de tarjeta 1.17) son falsos positivos por fondos con tinte; a la vista se leen bien. Lámina: `capturas/2026-11-14/bianca-v33-reverificacion.png`. Pendiente sólo integrar/publicar cuando Nico lo pida; teléfono físico sin verificar.

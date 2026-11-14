@@ -357,3 +357,6 @@ App en v32 (`a65df8f`, demo `?demo=1`). Novedades visuales desde tu última pasa
 - **v31**: chips de estado del detalle con pastel + texto de color en ambos temas (causa raíz del bug: clases STC green/orange/blue/yellow); íconos editar/borrar/cerrar ahora círculos con borde sutil; tarjetas escalonadas 60–110px (seleccionada con borde azul + sombra + por encima, sin moverse); lightbox con X; −/+ Cuota con tinte azul; guard del botón atrás con confirmación.
 - **v32**: causa raíz del salto de tarjetas arreglada (transform de .sel pisaba translateX — ya no); animaciones aceleradas (rise .5s→.18s, fadeUp .18s→.1s, delays máx .14s) — Nico sentía la página lenta; revisá que no queden bruscas.
 Checklist completa en Bianca-Recibe.md (2026-11-13). Capturas de Nico en INDICE-CAPTURAS.md.
+
+## Auditoría total v32 · 14 de noviembre de 2026
+NO OK por ícono gigante de Ajustes y toast superpuesto; contraste/táctil/lightbox pendientes (resueltos en `66541f5` sin integrar). Detalle en Bianca-Emite.md; capturas en `capturas/2026-11-14/`.

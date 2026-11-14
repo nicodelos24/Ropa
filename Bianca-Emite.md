@@ -402,3 +402,8 @@ Capturas originales de navegador y lámina resumen en **`capturas/2026-11-13/bia
 No usé cuentas ni datos reales, no envié WhatsApp, no cambié reglas Firebase, no hice push/merge ni publiqué. Fotos de prueba SVG y pedidos de prueba viven sólo en la demo. **No verificado en teléfono físico**, safe areas reales, teclado virtual ni lector de pantalla completo. No cierro B12 ni la revisión general v24–v28 por esta tarea.
 
 **Registro de comunicaciones y cierre:** pedí revisión única a Orion en su Recibe e incorporé su dictamen con sus límites. Entregué resultados, commit y evidencia a Alba en `Alba-Recibe.md`; el índice compartido creado por Nova incluye todas las capturas de esta ronda y el informe de Orion. **Preparación 4/5: corrección local lista para integrar cuando corresponda; no publicada.** Quedan fuera de esta entrega la integración/publicación, el teléfono físico y la auditoría integral. No hubo fallos reproducibles pendientes dentro de los cuatro puntos pedidos.
+
+## 2026-11-14 · Auditoría visual total v32 (`77ac0f1`)
+
+NO OK. Enviado a Alba (Alba-Recibe, misma fecha): 1) ícono gigante en Ajustes › Mi cuenta (falta `.sic`); 2) toast sobre Total/vacíos; 3) contrastes 2.24–3.73; 4) chips 26px; 5) lightbox sin dialog/foco; 6) menores (nav 320, filtros, favicon). v32 en sí OK (sin salto, confirmación, animaciones). Cobertura: 320/360/393/1280, claro/oscuro, 99 capturas; selección en `capturas/2026-11-14/`. Sin teléfono físico ni lector de pantalla. Recomendé portar `66541f5`.
+- 2026-11-14 · Re-verificación v33 `26fcf3c`: OK visual, enviado a Alba.

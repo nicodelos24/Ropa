@@ -1,6 +1,8 @@
 # Ropa — Memoria de Alba (coordinadora del proyecto)
 
-Última actualización: 13/11/2026, rondas de Nico v28–v32 (cache `ropa-v32`, hasta `6ae7e6b`).
+Última actualización: 14/11/2026. Publicado sigue v32 (`77ac0f1`, caché `ropa-v32`).
+
+**Entrega local sin integrar/publicar:** correcciones de auditoría v32 en `26fcf3c`, rama `fix/visual-v32`, worktree `.worktrees/fix-visual-v32`, caché siguiente preparada `ropa-v33`. Port selectivo de `66541f5` + seis puntos de la auditoría (SVG/toasts/contraste/táctil/lightbox/nav-filtros-favicon), conservando interacciones de v32. `npm test` 12/12; matriz demo en navegador 320/393/1280 claro/oscuro 145/145, 0 errores JS capturados. Informe con snapshots y límites: `capturas/2026-11-14/alba-v33-verificacion.md`; reproducción en `tests/README.md`. No confundir este worktree con `.worktrees/fix-visual-v29` (viejo `66541f5`).
 
 ## Qué es Ropa
 
