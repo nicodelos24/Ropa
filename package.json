@@ -1,0 +1,6 @@
+{
+  "name": "ropa-ui-checks",
+  "private": true,
+  "scripts": {"test": "node --test tests/*.test.cjs", "check": "node tests/check-syntax.cjs"},
+  "devDependencies": {"jsdom": "^26.1.0"}
+}
