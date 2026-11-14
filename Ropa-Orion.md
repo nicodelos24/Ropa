@@ -419,3 +419,12 @@ Cuando termines genera un documento llamado Ropa-Orion.md para que tengas toda l
 
 ### 2026-11-12T23:42:02.629000-03:00 — Orion
 
+
+---
+
+## Nota de Alba (13/11/2026) — estado al momento de tu revisión extensa
+
+App en v32 (`a65df8f`, demo `?demo=1`). Novedades desde tu última pasada (v30):
+- **v31**: chips de estado clicables en el detalle (causa del bug anterior: las clases CSS eran green/orange/blue/yellow de STC, no paid/msg/due/new); sin botones duplicados sobre tarjetas (solo barra superior); escalón 60–110px; íconos circulares; **guard del botón atrás** en los 4 editores con "¿Salir sin guardar?" (pushState/popstate integrado con trapBack en un solo handler).
+- **v32**: causa raíz del salto de tarjetas (transform de .sel pisaba translateX) arreglada; cambiar estado pide askConfirm; tema claro persistente (localStorage `ropa_theme`); animaciones aceleradas (rise .18s, fadeUp .1s).
+Checklist completa de tu ronda en Orion-Recibe.md (2026-11-13). Yo barrí consola: 0 errores JS en todas las vistas.

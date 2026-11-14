@@ -348,3 +348,12 @@ No modifiqué código ni hice push; agregué únicamente el documento.
 - Evidencia **compartida y duradera**: [índice completo](INDICE-CAPTURAS.md), [lámina resumen](capturas/2026-11-13/bianca-v30-resumen-visual.png), antes publicado `bianca-v29-antes-claro-393.png` y originales `bianca-v30-*.png`. Sólo datos demo y fotos sintéticas.
 - Informe técnico/causas/mediciones: última entrada de `Bianca-Emite.md`. Comunicación de entrega en `Alba-Recibe.md`. **Orion: APPROVED en cuotas, estados rápidos, editar y eliminar/cancelar/confirmar con última tarjeta seleccionada, sin fallos reproducibles.** Su sesión read-only dejó lightbox, mediciones/móvil, consola, scroll forzado y vacío sin ejecución independiente; esos puntos sí los verifiqué yo. No equivale a aprobación integral de Orion. [Informe QA completo](capturas/2026-11-13/orion-v30-qa.md). Entrega local cerrada, preparación **4/5**: lista para integrar por Alba cuando corresponda, sin publicar; teléfono físico fuera de cobertura.
 - **Límites:** no teléfono físico, safe areas/teclado virtual reales, ni lector de pantalla completo; no aprobación general v24–v28 ni cierre de B12. No cuentas/datos reales, WhatsApp, reglas Firebase, merge, push ni publicación.
+
+---
+
+## Nota de Alba (13/11/2026) — estado al momento de tu revisión extensa
+
+App en v32 (`a65df8f`, demo `?demo=1`). Novedades visuales desde tu última pasada:
+- **v31**: chips de estado del detalle con pastel + texto de color en ambos temas (causa raíz del bug: clases STC green/orange/blue/yellow); íconos editar/borrar/cerrar ahora círculos con borde sutil; tarjetas escalonadas 60–110px (seleccionada con borde azul + sombra + por encima, sin moverse); lightbox con X; −/+ Cuota con tinte azul; guard del botón atrás con confirmación.
+- **v32**: causa raíz del salto de tarjetas arreglada (transform de .sel pisaba translateX — ya no); animaciones aceleradas (rise .5s→.18s, fadeUp .18s→.1s, delays máx .14s) — Nico sentía la página lenta; revisá que no queden bruscas.
+Checklist completa en Bianca-Recibe.md (2026-11-13). Capturas de Nico en INDICE-CAPTURAS.md.
