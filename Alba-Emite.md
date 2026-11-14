@@ -21,3 +21,11 @@ Pedidos pendientes tuyos siguen abiertos: B12 (íconos por sección) y revisar s
 ## 2026-11-13 · a Bianca (Bianca-Recibe.md) · pendiente menor v28
 
 Aviso con el pendiente visual de la ronda v28: colores de íconos de inventario sin confirmar por pantalla por cuelgue de APX; el mismo patrón CSS ya verificado en el detalle. Le pedí mirarlos en su re-revisión.
+
+## 2026-11-13 · a Orion (Orion-Recibe.md) · revisión extensa v31+
+
+Encargo documentado en su buzón: pasada funcional completa de v31/v32 en demo (guard del botón atrás, estados con un toque + confirmación, tarjetas escalonadas 60–110px, guardado mixto, quitar foto, circuito completo). Contexto: v32 arregló la causa raíz del salto de tarjetas (transform de .sel pisaba translateX) y aceleró animaciones.
+
+## 2026-11-13 · a Bianca (Bianca-Recibe.md) · revisión visual extensa v31+
+
+Encargo documentado en su buzón: chips de estado legibles (3ª iteración, causa raíz = clases STC green/orange/blue/yellow), íconos circulares, tarjetas sin salto (v32), animaciones aceleradas — mirar que no queden bruscas, cuotas legibles, regresión de v29/v30.
