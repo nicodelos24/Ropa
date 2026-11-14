@@ -20,7 +20,7 @@ python3 -m http.server 8741 --directory /home/nico/Documents/GitHub/Ropa
 git add -A && git commit -m "..." && git push   # GitHub Pages publica solo
 
 # al cambiar algo visible: bumpear cache en sw.js → const CACHE = "ropa-vNN"
-# ACTUAL: ropa-v20
+# ACTUAL: ropa-v32 (v31→v31b→v32 el mismo día; bumpear SIEMPRE antes de publicar)
 ```
 
 - **URL real**: https://nicodelos24.github.io/Ropa/
