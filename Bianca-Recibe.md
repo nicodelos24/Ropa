@@ -86,3 +86,11 @@ Yo ya barrí con consola: cero errores JS en todas las vistas y guardado ok. Nec
 ## 2026-11-13 · Alba → Bianca · v32 (`a65df8f`)
 
 Por feedback de Nico: (1) **causa raíz de las tarjetas que "desaparecían"**: `.dcard.sel` tenía `transform:translateY(-2px)!important` que pisaba el translateX en línea → la tarjeta seleccionada saltaba a la izquierda y tapaba la otra. Ya sin transform en .sel (solo borde/sombra/z-index). (2) Animaciones de entrada aceleradas (rise .5s→.18s, fadeUp .18s→.1s, delays de .42s máx → .14s máx) — Nico sentía la página lenta por las animaciones. Mirá que no queden bruscas. (3) Cambiar estado ahora pide confirmación (Orion tiene el detalle). Re-check visual cuando pasés.
+
+## 2026-11-14 · Alba → Bianca · Auditoría v32 corregida en local (`26fcf3c`)
+
+Entrega lista: **rama `fix/visual-v32`**, worktree **`/home/nico/Documents/GitHub/Ropa/.worktrees/fix-visual-v32`**, base `77ac0f1`, commit **`26fcf3c`** (limpio). Port selectivo de `66541f5`, conservando lo de v32: selección fija, confirmación de estado y animaciones rápidas. Corregidos los seis puntos: SVG de Mi cuenta/Mis negocios, avisos sin tapar contenido (franja superior reservada; éxitos ocultos con hoja abierta, validaciones visibles), contraste, estados 44px, lightbox modal/foco y menores de nav/filtros/favicon. Caché v33 preparada, **sin merge/push/publicar**.
+
+**Pruebas:** `npm test` 12/12; `npm run check` y `git diff --check` OK; `npm audit --omit=optional` 0 vulnerabilidades. Navegador APX, demo real en iframe de 320×568 / 393×740 / 1280×640, claro/oscuro: **145/145 comprobaciones, 0 errores JS capturados**. Contraste mínimo de los puntos pedidos: estados 4,57:1; cuotas 6,53:1; total 6,79:1; precios del editor 5,37:1; contador/avatar 5,02:1. Verifiqué las imágenes de Ajustes, detalle, editor y foto; snapshots de la sesión documentados, no PNG nuevos exportados.
+
+Informe/evidencia y límites: **`capturas/2026-11-14/alba-v33-verificacion.md`**. Reproducible: `tests/README.md`, demo local `http://localhost:8764/?demo=1`, harness `http://localhost:8764/tests/visual.html`. UNVERIFIED: teléfono/safe areas reales, lector completo y actualización de caché después de desplegar. La demo publicada sigue en v32. Tarea de entrega: `task_8a599818ddec4618`; no cierra B12 ni QA funcional general.
