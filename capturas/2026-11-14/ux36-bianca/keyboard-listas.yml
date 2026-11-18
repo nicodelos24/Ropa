@@ -1,0 +1,56 @@
+- generic [ref=e1] [box=0,0,378,1443]:
+  - banner [ref=e2] [box=0,0,378,272]:
+    - generic [ref=e3] [box=18,14,342,45]:
+      - generic [ref=e4] [box=18,14,112,45]
+      - generic [ref=e7] [box=270,15,90,44]
+    - generic [ref=e161] [box=18,71,342,60]:
+      - generic [ref=e368] [box=18,71,109,60]
+      - generic [ref=e370] [box=135,71,109,60]
+      - generic [ref=e372] [box=251,71,109,60]
+    - textbox "Buscar…" [ref=e165] [box=18,143,342,44]
+    - generic "Filtrar pedidos" [ref=e374] [box=18,197,342,49]:
+      - button "Todos" [ref=e375] [cursor=pointer] [box=-124,197,68,33]
+      - button "Pagado" [ref=e376] [cursor=pointer] [box=-48,197,77,33]
+      - button "Mensaje enviado" [ref=e377] [cursor=pointer] [box=37,197,134,33]
+      - button "En 2 cuotas" [ref=e378] [cursor=pointer] [box=179,197,103,33]
+      - button "Nuevo" [ref=e379] [cursor=pointer] [box=290,197,70,33]
+    - paragraph [ref=e380] [box=18,248,342,12]: Deslizá para ver más estados ↔
+  - main [ref=e11] [box=0,272,378,1093]:
+    - generic [ref=e381] [box=14,286,350,154]:
+      - generic [ref=e382] [box=33,301,316,38]
+      - generic [ref=e390] [box=33,349,316,18]
+      - generic [ref=e393] [box=33,373,316,20]: Prenda con fotografía
+      - generic [ref=e394] [box=33,403,316,22]: Nuevo
+    - generic [ref=e396] [box=14,450,350,171]:
+      - generic [ref=e397] [box=33,465,316,38]
+      - generic [ref=e405] [box=33,513,316,18]
+      - generic [ref=e408] [box=33,537,316,39]: Abrigo largo15 nov
+      - generic [ref=e412] [box=33,586,316,20]: Pagado
+    - generic [ref=e414] [box=14,631,350,187]:
+      - generic [ref=e415] [box=33,646,316,38]
+      - generic [ref=e422] [box=33,694,316,18]
+      - generic [ref=e425] [box=33,718,316,39]: Pantalón negro21 nov
+      - generic [ref=e429] [box=33,767,316,20]
+    - generic [ref=e436] [box=14,828,350,171]:
+      - generic [ref=e437] [box=33,843,316,38]
+      - generic [ref=e448] [box=33,891,316,18]
+      - generic [ref=e451] [box=33,915,316,39]: Camisa blanca · Corbata18 nov
+      - generic [ref=e455] [box=33,964,316,20]: Mensaje enviado
+    - generic [ref=e457] [box=14,1009,350,173]:
+      - generic [ref=e458] [box=33,1024,316,38]
+      - generic [ref=e464] [box=33,1072,316,18]
+      - generic [ref=e467] [box=33,1096,316,39]: Vestido floral16 nov
+      - generic [ref=e471] [box=33,1145,316,22]: Nuevo
+    - generic [ref=e473] [box=14,1192,350,152]:
+      - generic [ref=e474] [box=33,1207,316,38]
+      - generic [ref=e481] [box=33,1255,316,18]
+      - generic [ref=e484] [box=33,1279,316,20]: 2× Medias lanas
+      - generic [ref=e485] [box=33,1308,316,20]: Pagado
+  - navigation [ref=e130] [box=0,679,378,61]:
+    - button "Inicio" [active] [ref=e131] [cursor=pointer] [box=0,688,54,44]
+    - button "Agenda" [ref=e135] [cursor=pointer] [box=54,688,54,44]
+    - button "Pedidos" [ref=e139] [cursor=pointer] [box=108,688,54,44]
+    - button "Inventario" [ref=e143] [cursor=pointer] [box=162,688,54,44]
+    - button "Contactos" [ref=e147] [cursor=pointer] [box=216,688,54,44]
+    - button "Historial" [ref=e152] [cursor=pointer] [box=270,688,54,44]
+    - button "Ajustes" [ref=e156] [cursor=pointer] [box=324,688,54,44]

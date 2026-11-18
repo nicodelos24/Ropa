@@ -1,0 +1,131 @@
+✖ F1: two manual rows of same name retain both prices, total and storage (661.305894ms)
+ℹ {"rows":2,"preview":"$100","count":"1 producto en el pedido","saved":[{"name":"Remera","price":100,"qty":1,"photo":null}],"stored":[{"name":"Remera","price":100,"qty":1,"photo":null}],"reopened":1}
+✖ F2: inventory decimal locale value must not silently become 100x larger (228.369442ms)
+ℹ {"savedPrice":120050,"persistedPrice":120050,"toast":"Inventario actualizado ✓","sheetOpen":false}
+✖ F3a: remove photo then Cancel must preserve original and subsequent persistence (113.635254ms)
+ℹ {"immediately":null,"reopened":false,"storageBeforeOtherSaveHasPhoto":true,"storageAfterOtherSaveHasPhoto":false}
+✖ F3b: attach photo then Cancel must preserve previous null (compression stub only) (144.615287ms)
+ℹ {"immediateHasPhoto":true,"reopened":true,"persistedHasPhoto":true}
+✖ F4: deleting inventory keeps photo of saved order as promised (175.675724ms)
+ℹ {"promise":"Se quita del inventario. Los pedidos ya guardados no cambian.","photoBefore":true,"photoAfter":false,"detailImageCount":0,"orderUnchanged":true,"itemPhotoStillStored":true,"inventoryDeleted":true}
+✔ control: mixed rows, quantity 2 and zero price survive toggles/save inv/reopen/local reload (238.982168ms)
+ℹ {"preview":"$1,700","items":[{"name":"Medias lanas","price":250,"qty":2,"photo":null},{"name":"Vestido floral","price":1200,"qty":1,"photo":null},{"name":"QA Gratis","price":0,"qty":1,"photo":null}],"reopenedTotal":"$1,700","rows":3}
+✔ control: mixed rows, quantity 2 and zero price survive toggles/save man/reopen/local reload (228.963861ms)
+ℹ {"preview":"$1,700","items":[{"name":"Medias lanas","price":250,"qty":2,"photo":null},{"name":"Vestido floral","price":1200,"qty":1,"photo":null},{"name":"QA Gratis","price":0,"qty":1,"photo":null}],"reopenedTotal":"$1,700","rows":3}
+✔ control: remove photo with Save and attachment with Save persist/reopen (158.381118ms)
+ℹ {"removeSavedAndReopened":true,"attachSavedAndReopened":true,"compressorStubbed":true}
+ℹ tests 8
+ℹ suites 0
+ℹ pass 3
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2947.428245
+
+✖ failing tests:
+
+test at ../../../../../../../tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:22:1
+✖ F1: two manual rows of same name retain both prices, total and storage (661.305894ms)
+  AssertionError [ERR_ASSERTION]: two displayed lines must not silently lose the second
+  
+  100 !== 300
+  
+      at TestContext.<anonymous> (/tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:30:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 100,
+    expected: 300,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:33:1
+✖ F2: inventory decimal locale value must not silently become 100x larger (228.369442ms)
+  AssertionError [ERR_ASSERTION]: either parse locale decimal or reject it, not store 120050
+  
+  120050 !== 1200.5
+  
+      at TestContext.<anonymous> (/tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:36:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 120050,
+    expected: 1200.5,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:38:1
+✖ F3a: remove photo then Cancel must preserve original and subsequent persistence (113.635254ms)
+  AssertionError [ERR_ASSERTION]: Cancel must roll back live object
+  + actual - expected
+  
+  + null
+  - 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j0WQAAAAASUVORK5CYII='
+  
+      at TestContext.<anonymous> (/tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:43:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j0WQAAAAASUVORK5CYII=',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:45:1
+✖ F3b: attach photo then Cancel must preserve previous null (compression stub only) (144.615287ms)
+  AssertionError [ERR_ASSERTION]: Cancel must not retain attachment on live object
+  + actual - expected
+  
+  + 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j0WQAAAAASUVORK5CYII='
+  - null
+  
+      at TestContext.<anonymous> (/tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:50:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j0WQAAAAASUVORK5CYII=',
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../../../tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:52:1
+✖ F4: deleting inventory keeps photo of saved order as promised (175.675724ms)
+  AssertionError [ERR_ASSERTION]: saved item photo must remain visible after deleting inventory
+  + actual - expected
+  
+  + ''
+  - 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j0WQAAAAASUVORK5CYII='
+  
+      at TestContext.<anonymous> (/tmp/apx-scratch-4f023747/th_9f4ae5e0addf43aa/orion-ux34-regression.test.cjs:59:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j0WQAAAAASUVORK5CYII=',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
