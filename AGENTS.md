@@ -1,5 +1,9 @@
 # Ropa — protocolo entre agentes (leer al empezar cualquier tarea)
 
+## ⛔ Repo congelado: versión primaria (19/11/2026)
+
+**Este repo (Ropa v1) es la versión primaria y está CONGELADO por decisión de Nico.** La app quedó terminada y funcionando en https://nicodelos24.github.io/Ropa/; el desarrollo continúa SOLO en la V2 (`archived-Aplicacion-ropa`). No modificar código de la app (`index.html`, `sw.js`, etc.), docs de app ni configuración; no integrar, publicar ni pushear nada acá salvo orden EXPRESA de Nico. Tratar este repo como archivo histórico. Último estado: UX36 final sobre `e7ed7eb`, OK visual de Bianca ([informe](Revision-Bianca-UX36-final-e7ed7eb.md), 22 capturas en `capturas/2026-11-19/bianca-ux36-final/`). Detalle completo en [README.md](README.md).
+
 ## Documentación vigente
 
 - **README.md**: descripción del proyecto.

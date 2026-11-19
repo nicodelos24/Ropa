@@ -20,6 +20,14 @@ Nueva auditoría local terminada; no publicada. **[Informe UX36](Revision-Bianca
 - Individuales: `keyboard-background.png`, `decimal-sin-mensaje.png`, `invalido-cero.png`, `foto-quitar-editor.png`, `foto-catalogo-antes.png`, `foto-catalogo-despues.png`, `cliente-hechos.png`, `lightbox.png`. Snapshot `keyboard-listas.yml`. Todas en la carpeta UX36.
 - No usar imágenes UX35 de0bc1a40 como evidencia de cd851c7. La suite23/23 no cierra los casos negativos de dinero; informe/recibo de Alba explican qué pasa y qué sigue abierto.
 
+## 2026-11-19 · Bianca · UX36 final sobre e7ed7eb — OK visual
+
+Revisión visual en Chrome real del HEAD final **`e7ed7eb`** (rama `feat/ux-v34`, worktree `.worktrees/ux-v34`), tras el NO OK de `cd851c7`. **[Informe final](Revision-Bianca-UX36-final-e7ed7eb.md)** · [tarea](apx:tasks/task_50f1b4caf02e42de). Demo local `http://127.0.0.1:8901/?demo=1`, SHA-256 de `index.html` `b431772056f49d971d79ee18cecff400dd1c26b3daced98e102c3bf0b395b959`. Sin datos de clientas reales.
+
+- **[Carpeta con 22 capturas](capturas/2026-11-19/bianca-ux36-final/)**: estados `Nuevo`/`Mensaje enviado` en Inicio, filtros y badges en Pedidos, detalle claro/oscuro, editor con pie sticky en distintos estados de scroll y con 6 filas largas, error de decimal en alta de producto y en pedido, inventario en tres columnas, vacío y voseo en Agenda/Inicio/Historial, y Inicio en 320/393/1280.
+- Veredicto **OK** para los puntos pedidos: estados visibles, tarjetas sin superposición horizontal, editar/borrar accesibles, orden Nombre→Precio→Foto→Categoría, pie Total+Guardar persistente, copy de Inicio en voseo y precios enteros con error visible al ingresar decimales (decisión de Nico 19-11; no se pide cambio en el parser).
+- Sin publicación ni cambios de código; no cubre teléfono físico, nube ni versión publicada. Orion continúa con el QA funcional posterior sobre la misma base.
+
 ## Capturas registradas
 
 | Fecha | Autor | Versión / contexto | Descripción | Archivo / evidencia | Estado |
